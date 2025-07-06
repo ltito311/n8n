@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - Eleven Restaurant and Lounge | Visual Experience</title>
+    <meta name="description" content="Explore our gallery showcasing food, drinks, ambience, and events at Eleven Restaurant and Lounge in Savanna-la-Mar, Jamaica.">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/images/logo.png" alt="Eleven Restaurant and Lounge" class="logo">
+                <span class="brand-name">Eleven</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="menu.html" class="nav-link">Menu</a></li>
+                <li><a href="gallery.html" class="nav-link active">Gallery</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="reservation.html" class="nav-link btn-reserve">Reserve Table</a></li>
+            </ul>
+            
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gallery-hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Gallery</h1>
+            <p class="hero-subtitle">A Visual Journey Through Eleven</p>
+        </div>
+    </section>
+
+    <!-- Gallery Navigation -->
+    <section class="gallery-nav">
+        <div class="container">
+            <div class="gallery-nav-links">
+                <button class="gallery-nav-btn active" data-category="all">All</button>
+                <button class="gallery-nav-btn" data-category="food">Food</button>
+                <button class="gallery-nav-btn" data-category="drinks">Drinks</button>
+                <button class="gallery-nav-btn" data-category="ambience">Ambience</button>
+                <button class="gallery-nav-btn" data-category="events">Events</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Grid -->
+    <section class="gallery-grid-section">
+        <div class="container">
+            <div class="gallery-grid">
+                <!-- Food Items -->
+                <div class="gallery-item" data-category="food">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2081&q=80" alt="Signature Dish">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Signature Dishes</h3>
+                                <p>Our chef's special creations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="food">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Fresh Seafood">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Fresh Seafood</h3>
+                                <p>Ocean-fresh delicacies</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="food">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Jamaican Cuisine">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Jamaican Favorites</h3>
+                                <p>Authentic local flavors</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Drinks Items -->
+                <div class="gallery-item" data-category="drinks">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Craft Cocktails">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Craft Cocktails</h3>
+                                <p>Artisanal mixed drinks</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="drinks">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1536935338788-846bb9981813?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2086&q=80" alt="Tropical Drinks">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Tropical Beverages</h3>
+                                <p>Island-inspired refreshments</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ambience Items -->
+                <div class="gallery-item" data-category="ambience">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Restaurant Interior">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Elegant Interior</h3>
+                                <p>Sophisticated dining atmosphere</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="ambience">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Lounge Area">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Lounge Area</h3>
+                                <p>Comfortable seating arrangements</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Events Items -->
+                <div class="gallery-item" data-category="events">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Sunday Karaoke">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Sunday Karaoke</h3>
+                                <p>Entertainment with Starboy Rodriguez</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="events">
+                    <div class="gallery-image">
+                        <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" alt="Private Events">
+                        <div class="gallery-overlay">
+                            <div class="gallery-info">
+                                <h3>Private Events</h3>
+                                <p>Celebrations and special occasions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Instagram Feed -->
+    <section class="instagram-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Follow Us on Instagram</h2>
+                <p>Stay updated with our latest dishes, events, and behind-the-scenes moments</p>
+            </div>
+            
+            <div class="instagram-widget">
+                <script src="https://static.elfsight.com/platform/platform.js" async></script>
+                <div class="elfsight-app-e34192b5-821d-49c6-a926-ff653ffd2dca" data-elfsight-app-lazy></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <img src="assets/images/logo.png" alt="Eleven Restaurant and Lounge" class="footer-logo">
+                        <h3>Eleven Restaurant & Lounge</h3>
+                    </div>
+                    <p>Experience the finest dining in Savanna-la-Mar, where culinary excellence meets elegant ambiance.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="menu.html">Menu</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="reservation.html">Reservations</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>1 Beckford St, Savanna la Mar, Jamaica</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+1 876-223-9926</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>info@elevenrestaurant.com</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe for exclusive offers and updates</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email" required>
+                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Eleven Restaurant and Lounge. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <iframe src="https://ricodon4321.app.n8n.cloud/webhook/dcd67970-339b-4f9b-b16e-6125abbfeb47/chat" 
+                frameborder="0" 
+                class="chatbot-iframe">
+        </iframe>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

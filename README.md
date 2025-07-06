@@ -1,72 +1,118 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# Eleven Restaurant and Lounge - Website
 
-# n8n - Secure Workflow Automation for Technical Teams
+A professional, luxurious restaurant website for Eleven Restaurant and Lounge, located in Savanna-la-Mar, Jamaica.
 
-n8n is a workflow automation platform that gives technical teams the flexibility of code with the speed of no-code. With 400+ integrations, native AI capabilities, and a fair-code license, n8n lets you build powerful automations while maintaining full control over your data and deployments.
+## ✨ Features
 
-![n8n.io - Screenshot](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-screenshot-readme.png)
+### 🏠 **Complete Page Structure**
+- **Homepage** - Hero section, about preview, menu categories, hours & services
+- **About** - Restaurant story, values, chef profile, experience overview
+- **Menu** - Organized by categories with individual item pages
+- **Gallery** - Categorized by Food, Drinks, Ambience, Events
+- **Contact** - Contact form, business information, services
+- **Reservation** - Online booking form, private events, policies
 
-## Key Capabilities
+### 🎨 **Design & User Experience**
+- **Luxurious Aesthetic** - Dark theme with gold accents (#d4af37)
+- **Elegant Typography** - Playfair Display + Inter font combination
+- **Responsive Design** - Fully mobile-optimized with hamburger menu
+- **Smooth Animations** - Hover effects, transitions, scroll animations
+- **Professional Photography** - High-quality Unsplash images
 
-- **Code When You Need It**: Write JavaScript/Python, add npm packages, or use the visual interface
-- **AI-Native Platform**: Build AI agent workflows based on LangChain with your own data and models
-- **Full Control**: Self-host with our fair-code license or use our [cloud offering](https://app.n8n.cloud/login)
-- **Enterprise-Ready**: Advanced permissions, SSO, and air-gapped deployments
-- **Active Community**: 400+ integrations and 900+ ready-to-use [templates](https://n8n.io/workflows)
+### 🚀 **Technical Features**
+- **Modern HTML5** - Semantic markup with proper SEO meta tags
+- **Advanced CSS3** - Grid layouts, flexbox, custom animations
+- **Interactive JavaScript** - Mobile menu, form validation, smooth scrolling
+- **Accessibility** - Proper ARIA labels, keyboard navigation support
+- **Performance Optimized** - Efficient code structure and image optimization
 
-## Quick Start
+### 🛠 **Integrated Functionality**
+- **Chatbot Integration** - Bottom-right widget using provided webhook
+- **Instagram Feed** - Elfsight widget for social media integration
+- **Reservation System** - Comprehensive booking form with validation
+- **Contact Forms** - Multiple contact points with form handling
+- **Menu Item Pages** - Individual pages for each dish/drink
 
-Try n8n instantly with [npx](https://docs.n8n.io/hosting/installation/npm/) (requires [Node.js](https://nodejs.org/en/)):
+## 📱 **Business Information**
+
+**Eleven Restaurant and Lounge**
+- 📍 1 Beckford St, Savanna la Mar, Jamaica
+- 📞 +1 876-223-9926
+- ⏰ Mon-Sat: 11 AM - 11 PM | Sun: 5 PM - 11 PM
+- 🎤 Sunday Karaoke with Starboy Rodriguez
+- ⭐ 3.6/5 Rating (56 Reviews)
+
+## 🎯 **Special Features**
+
+### Menu Structure
+- **Appetizers** - Jerk wings, coconut shrimp, plantain fritters, conch fritters
+- **Main Courses** - Jerk pork, grilled red snapper, braised oxtail, curry goat
+- **Desserts** - Rum cake, coconut tart, chocolate soufflé
+- **Beverages** - Rum punch, mango margarita, Blue Mountain coffee
+
+### Gallery Categories
+- **Food** - Signature dishes and culinary presentations
+- **Drinks** - Craft cocktails and beverage selections
+- **Ambience** - Restaurant interior and dining atmosphere
+- **Events** - Sunday karaoke and special occasions
+
+### Services
+- 🍽️ Fine Dining Experience
+- 🚗 Curbside Pickup
+- 🎤 Sunday Karaoke Nights
+- 🎉 Private Events & Corporate Functions
+
+## 💼 **Design Inspiration**
+
+The website draws inspiration from:
+- **Savoria Template** - Luxurious layout and sophisticated design language
+- **Shawma Bazaar** - Gallery organization and image presentation
+- **COTE Korean Steakhouse** - Call-to-action flow and professional copy
+
+## 🌟 **Key Design Elements**
+
+- **Color Palette** - Deep blacks (#0a0a0a, #111111) with gold accents (#d4af37)
+- **Typography** - Playfair Display for headings, Inter for body text
+- **Layout** - Clean grid systems with generous whitespace
+- **Interactive Elements** - Hover animations and smooth transitions
+- **Professional Photography** - Curated high-quality food and restaurant imagery
+
+## 📁 **File Structure**
 
 ```
-npx n8n
+/
+├── index.html                 # Homepage
+├── about.html                 # About page
+├── menu.html                  # Menu overview page
+├── gallery.html               # Image gallery
+├── contact.html               # Contact information & form
+├── reservation.html           # Reservation booking form
+├── menu-items/
+│   └── jerk-chicken-wings.html # Sample individual menu item
+├── assets/
+│   ├── css/
+│   │   └── style.css          # Main stylesheet
+│   ├── js/
+│   │   └── script.js          # Interactive functionality
+│   └── images/                # Logo and asset placeholders
+└── README.md                  # Project documentation
 ```
 
-Or deploy with [Docker](https://docs.n8n.io/hosting/installation/docker/):
+## 🚀 **Getting Started**
 
-```
-docker volume create n8n_data
-docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
-```
+1. **Open the website** - Start with `index.html` in your browser
+2. **Navigation** - Use the top navigation to explore all sections
+3. **Reservations** - Book tables through the reservation form
+4. **Contact** - Get in touch via the contact page
+5. **Menu** - Browse individual menu items with detailed information
 
-Access the editor at http://localhost:5678
+## 📞 **Contact & Reservations**
 
-## Resources
+- **Phone**: +1 876-223-9926
+- **Email**: info@elevenrestaurant.com
+- **Online Booking**: Available through reservation page
+- **Chatbot**: Integrated for instant customer support
 
-- 📚 [Documentation](https://docs.n8n.io)
-- 🔧 [400+ Integrations](https://n8n.io/integrations)
-- 💡 [Example Workflows](https://n8n.io/workflows)
-- 🤖 [AI & LangChain Guide](https://docs.n8n.io/langchain/)
-- 👥 [Community Forum](https://community.n8n.io)
-- 📖 [Community Tutorials](https://community.n8n.io/c/tutorials/28)
+---
 
-## Support
-
-Need help? Our community forum is the place to get support and connect with other users:
-[community.n8n.io](https://community.n8n.io)
-
-## License
-
-n8n is [fair-code](https://faircode.io) distributed under the [Sustainable Use License](https://github.com/n8n-io/n8n/blob/master/LICENSE.md) and [n8n Enterprise License](https://github.com/n8n-io/n8n/blob/master/LICENSE_EE.md).
-
-- **Source Available**: Always visible source code
-- **Self-Hostable**: Deploy anywhere
-- **Extensible**: Add your own nodes and functionality
-
-[Enterprise licenses](mailto:license@n8n.io) available for additional features and support.
-
-Additional information about the license model can be found in the [docs](https://docs.n8n.io/reference/license/).
-
-## Contributing
-
-Found a bug 🐛 or have a feature idea ✨? Check our [Contributing Guide](https://github.com/n8n-io/n8n/blob/master/CONTRIBUTING.md) to get started.
-
-## Join the Team
-
-Want to shape the future of automation? Check out our [job posts](https://n8n.io/careers) and join our team!
-
-## What does n8n mean?
-
-**Short answer:** It means "nodemation" and is pronounced as n-eight-n.
-
-**Long answer:** "I get that question quite often (more often than I expected) so I decided it is probably best to answer it here. While looking for a good name for the project with a free domain I realized very quickly that all the good ones I could think of were already taken. So, in the end, I chose nodemation. 'node-' in the sense that it uses a Node-View and that it uses Node.js and '-mation' for 'automation' which is what the project is supposed to help with. However, I did not like how long the name was and I could not imagine writing something that long every time in the CLI. That is when I then ended up on 'n8n'." - **Jan Oberhauser, Founder and CEO, n8n.io**
+*Built with attention to detail for Eleven Restaurant and Lounge - Where Culinary Excellence Meets Elegant Ambiance*

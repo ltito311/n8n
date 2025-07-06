@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations - Eleven Restaurant and Lounge | Book Your Table</title>
+    <meta name="description" content="Reserve your table at Eleven Restaurant and Lounge in Savanna-la-Mar, Jamaica. Book online or call +1 876-223-9926 for an unforgettable dining experience.">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/images/logo.png" alt="Eleven Restaurant and Lounge" class="logo">
+                <span class="brand-name">Eleven</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="menu.html" class="nav-link">Menu</a></li>
+                <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="reservation.html" class="nav-link active btn-reserve">Reserve Table</a></li>
+            </ul>
+            
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="reservation-hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Make a Reservation</h1>
+            <p class="hero-subtitle">Secure Your Table for an Unforgettable Experience</p>
+        </div>
+    </section>
+
+    <!-- Reservation Options -->
+    <section class="reservation-options">
+        <div class="container">
+            <div class="section-header">
+                <h2>Choose Your Experience</h2>
+                <p>Select the perfect dining option for your occasion</p>
+            </div>
+            
+            <div class="reservation-types">
+                <div class="reservation-type active" data-type="regular">
+                    <div class="type-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3>Regular Dining</h3>
+                    <p>Perfect for intimate dinners and casual dining</p>
+                </div>
+                
+                <div class="reservation-type" data-type="private">
+                    <div class="type-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Private Events</h3>
+                    <p>Customized experiences for special occasions</p>
+                </div>
+                
+                <div class="reservation-type" data-type="karaoke">
+                    <div class="type-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3>Sunday Karaoke</h3>
+                    <p>Join our weekly karaoke nights</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reservation Form -->
+    <section class="reservation-form-section">
+        <div class="container">
+            <div class="reservation-form-grid">
+                <div class="form-content">
+                    <div class="form-header">
+                        <h2>Reserve Your Table</h2>
+                        <p>Complete the form below to secure your reservation. We'll confirm your booking within 24 hours.</p>
+                    </div>
+                    
+                    <form class="reservation-form" id="reservationForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name *</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name *</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="date">Preferred Date *</label>
+                                <input type="date" id="date" name="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="time">Preferred Time *</label>
+                                <select id="time" name="time" required>
+                                    <option value="">Select time</option>
+                                    <option value="17:00">5:00 PM</option>
+                                    <option value="17:30">5:30 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                    <option value="18:30">6:30 PM</option>
+                                    <option value="19:00">7:00 PM</option>
+                                    <option value="19:30">7:30 PM</option>
+                                    <option value="20:00">8:00 PM</option>
+                                    <option value="20:30">8:30 PM</option>
+                                    <option value="21:00">9:00 PM</option>
+                                    <option value="21:30">9:30 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="guests">Number of Guests *</label>
+                                <select id="guests" name="guests" required>
+                                    <option value="">Select guests</option>
+                                    <option value="1">1 Guest</option>
+                                    <option value="2">2 Guests</option>
+                                    <option value="3">3 Guests</option>
+                                    <option value="4">4 Guests</option>
+                                    <option value="5">5 Guests</option>
+                                    <option value="6">6 Guests</option>
+                                    <option value="7">7 Guests</option>
+                                    <option value="8">8 Guests</option>
+                                    <option value="9+">9+ Guests</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="occasion">Occasion</label>
+                                <select id="occasion" name="occasion">
+                                    <option value="">Select occasion</option>
+                                    <option value="birthday">Birthday</option>
+                                    <option value="anniversary">Anniversary</option>
+                                    <option value="date">Date Night</option>
+                                    <option value="business">Business Meeting</option>
+                                    <option value="celebration">Celebration</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="requests">Special Requests</label>
+                            <textarea id="requests" name="requests" rows="3" placeholder="Dietary restrictions, seating preferences, or special accommodations..."></textarea>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="newsletter" value="yes">
+                                <span class="checkmark"></span>
+                                Subscribe to our newsletter for exclusive offers and updates
+                            </label>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Reserve Table</button>
+                            <p class="form-note">By submitting this form, you agree to our <a href="#" class="link">cancellation policy</a>.</p>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="reservation-info">
+                    <h3>Reservation Information</h3>
+                    
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Operating Hours</h4>
+                            <p>Monday - Saturday: 11:00 AM - 11:00 PM<br>
+                               Sunday: 5:00 PM - 11:00 PM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Call to Reserve</h4>
+                            <p>+1 876-223-9926</p>
+                            <small>Available during business hours</small>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="info-content">
+                            <h4>Important Notes</h4>
+                            <ul>
+                                <li>Reservations confirmed within 24 hours</li>
+                                <li>Tables held for 15 minutes past reservation time</li>
+                                <li>Groups of 8+ require advance notice</li>
+                                <li>Dress code: Smart casual</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Private Events Section -->
+    <section class="private-events-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Private Events & Group Dining</h2>
+                <p>Create memorable experiences for your special occasions</p>
+            </div>
+            
+            <div class="events-grid">
+                <div class="event-type">
+                    <div class="event-image">
+                        <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" alt="Corporate Events">
+                    </div>
+                    <div class="event-content">
+                        <h3>Corporate Events</h3>
+                        <p>Impress clients and colleagues with our sophisticated dining experience. Perfect for business meetings, product launches, and corporate celebrations.</p>
+                        <ul>
+                            <li>Customized menu options</li>
+                            <li>Private dining areas</li>
+                            <li>AV equipment available</li>
+                            <li>Professional service</li>
+                        </ul>
+                        <a href="contact.html" class="btn btn-outline">Plan Your Event</a>
+                    </div>
+                </div>
+                
+                <div class="event-type">
+                    <div class="event-image">
+                        <img src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" alt="Special Celebrations">
+                    </div>
+                    <div class="event-content">
+                        <h3>Special Celebrations</h3>
+                        <p>Make your milestone moments unforgettable with our personalized service and elegant atmosphere. Birthdays, anniversaries, and life celebrations.</p>
+                        <ul>
+                            <li>Personalized decorations</li>
+                            <li>Custom cake service</li>
+                            <li>Special menu arrangements</li>
+                            <li>Photography coordination</li>
+                        </ul>
+                        <a href="contact.html" class="btn btn-outline">Celebrate With Us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cancellation Policy -->
+    <section class="policy-section">
+        <div class="container">
+            <div class="policy-content">
+                <h2>Reservation & Cancellation Policy</h2>
+                
+                <div class="policy-grid">
+                    <div class="policy-item">
+                        <h3>Reservation Confirmation</h3>
+                        <p>All reservations are confirmed via email or phone within 24 hours of booking. We recommend arriving 10-15 minutes before your reservation time.</p>
+                    </div>
+                    
+                    <div class="policy-item">
+                        <h3>Cancellation Policy</h3>
+                        <p>Cancellations must be made at least 4 hours in advance. Same-day cancellations may be subject to a cancellation fee for groups of 6 or more.</p>
+                    </div>
+                    
+                    <div class="policy-item">
+                        <h3>No-Show Policy</h3>
+                        <p>Tables are held for 15 minutes past the reservation time. No-shows may affect future reservation availability.</p>
+                    </div>
+                    
+                    <div class="policy-item">
+                        <h3>Large Groups</h3>
+                        <p>Parties of 8 or more require advance notice and may have limited menu options. A service charge may apply for groups of 10 or more.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <img src="assets/images/logo.png" alt="Eleven Restaurant and Lounge" class="footer-logo">
+                        <h3>Eleven Restaurant & Lounge</h3>
+                    </div>
+                    <p>Experience the finest dining in Savanna-la-Mar, where culinary excellence meets elegant ambiance.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="menu.html">Menu</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="reservation.html">Reservations</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>1 Beckford St, Savanna la Mar, Jamaica</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+1 876-223-9926</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>info@elevenrestaurant.com</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe for exclusive offers and updates</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email" required>
+                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Eleven Restaurant and Lounge. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <iframe src="https://ricodon4321.app.n8n.cloud/webhook/dcd67970-339b-4f9b-b16e-6125abbfeb47/chat" 
+                frameborder="0" 
+                class="chatbot-iframe">
+        </iframe>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
