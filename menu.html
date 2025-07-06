@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Eleven's | Luxury Dining & Lounge</title>
+    <meta name="description" content="Discover our exquisite menu featuring premium appetizers, main courses, and signature beverages at Eleven's in Savanna-la-Mar, Jamaica.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="menu-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h1><a href="index.html">Eleven's</a></h1>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="menu.html" class="nav-link active">Menu</a>
+                </li>
+                <li class="nav-item">
+                    <a href="gallery.html" class="nav-link">Gallery</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a href="reservation.html" class="nav-link nav-cta">Reserve</a>
+                </li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Menu Hero Section -->
+    <section class="menu-hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Our Menu</h1>
+            <p class="hero-subtitle">Discover culinary excellence with our carefully curated selection of premium dishes and beverages</p>
+        </div>
+    </section>
+
+    <!-- Menu Navigation -->
+    <section class="menu-nav">
+        <div class="container">
+            <div class="menu-nav-links">
+                <a href="#appetizers" class="menu-nav-link active">Appetizers</a>
+                <a href="#mains" class="menu-nav-link">Main Courses</a>
+                <a href="#beverages" class="menu-nav-link">Beverages</a>
+                <a href="#desserts" class="menu-nav-link">Desserts</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Appetizers Section -->
+    <section class="menu-section" id="appetizers">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Appetizers</h2>
+                <p class="section-description">Exquisite starters to begin your culinary journey</p>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Shrimp Cocktail">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Shrimp Cocktail</h3>
+                        <p class="menu-item-price">$1,200</p>
+                        <p class="menu-item-description">Fresh jumbo shrimp served with cocktail sauce and lemon</p>
+                        <a href="menu-item.html?item=shrimp-cocktail" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1541014741259-de529411b96a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Stuffed Mushrooms">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Stuffed Mushrooms</h3>
+                        <p class="menu-item-price">$900</p>
+                        <p class="menu-item-description">Button mushrooms stuffed with herbs and cheese</p>
+                        <a href="menu-item.html?item=stuffed-mushrooms" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1559847844-d721426d6edf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Chicken Wings">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Chicken Wings</h3>
+                        <p class="menu-item-price">$800</p>
+                        <p class="menu-item-description">Crispy wings tossed in your choice of sauce</p>
+                        <a href="menu-item.html?item=chicken-wings" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1583191032022-4765d2b3d1e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Nachos">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Nachos Supreme</h3>
+                        <p class="menu-item-price">$1,000</p>
+                        <p class="menu-item-description">Loaded nachos with cheese, jalapeños, and fresh toppings</p>
+                        <a href="menu-item.html?item=nachos-supreme" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1544982503-9f984c14501a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Calamari">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Calamari Rings</h3>
+                        <p class="menu-item-price">$1,300</p>
+                        <p class="menu-item-description">Crispy fried calamari with marinara sauce</p>
+                        <a href="menu-item.html?item=calamari-rings" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Bruschetta">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Bruschetta</h3>
+                        <p class="menu-item-price">$700</p>
+                        <p class="menu-item-description">Toasted bread with fresh tomatoes, basil, and garlic</p>
+                        <a href="menu-item.html?item=bruschetta" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Courses Section -->
+    <section class="menu-section" id="mains">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Main Courses</h2>
+                <p class="section-description">Premium selections crafted with the finest ingredients</p>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Grilled Salmon">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Grilled Salmon</h3>
+                        <p class="menu-item-price">$2,500</p>
+                        <p class="menu-item-description">Fresh Atlantic salmon with lemon butter sauce and seasonal vegetables</p>
+                        <a href="menu-item.html?item=grilled-salmon" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Ribeye Steak">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Ribeye Steak</h3>
+                        <p class="menu-item-price">$3,200</p>
+                        <p class="menu-item-description">Premium cut ribeye steak grilled to perfection with garlic mashed potatoes</p>
+                        <a href="menu-item.html?item=ribeye-steak" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Lobster Tail">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Lobster Tail</h3>
+                        <p class="menu-item-price">$4,000</p>
+                        <p class="menu-item-description">Fresh lobster tail with drawn butter and herb risotto</p>
+                        <a href="menu-item.html?item=lobster-tail" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Chicken Parmesan">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Chicken Parmesan</h3>
+                        <p class="menu-item-price">$2,000</p>
+                        <p class="menu-item-description">Breaded chicken breast with marinara sauce and melted mozzarella</p>
+                        <a href="menu-item.html?item=chicken-parmesan" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Pasta Alfredo">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Pasta Alfredo</h3>
+                        <p class="menu-item-price">$1,800</p>
+                        <p class="menu-item-description">Fresh fettuccine pasta in rich cream sauce with parmesan</p>
+                        <a href="menu-item.html?item=pasta-alfredo" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Seafood Risotto">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Seafood Risotto</h3>
+                        <p class="menu-item-price">$2,800</p>
+                        <p class="menu-item-description">Creamy risotto with fresh shrimp, scallops, and mussels</p>
+                        <a href="menu-item.html?item=seafood-risotto" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beverages Section -->
+    <section class="menu-section" id="beverages">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Beverages</h2>
+                <p class="section-description">Signature cocktails and premium spirits</p>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Signature Cocktail">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Signature Cocktail</h3>
+                        <p class="menu-item-price">$1,500</p>
+                        <p class="menu-item-description">Our house special blend with premium spirits</p>
+                        <a href="menu-item.html?item=signature-cocktail" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Red Wine">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Premium Red Wine</h3>
+                        <p class="menu-item-price">$2,200</p>
+                        <p class="menu-item-description">Carefully selected red wine from our cellar</p>
+                        <a href="menu-item.html?item=premium-red-wine" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Champagne">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Champagne</h3>
+                        <p class="menu-item-price">$3,500</p>
+                        <p class="menu-item-description">Premium champagne for special celebrations</p>
+                        <a href="menu-item.html?item=champagne" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1544824816-0c6d3e42c0be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Whiskey">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Premium Whiskey</h3>
+                        <p class="menu-item-price">$1,800</p>
+                        <p class="menu-item-description">Aged whiskey served neat or on the rocks</p>
+                        <a href="menu-item.html?item=premium-whiskey" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Martini">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Classic Martini</h3>
+                        <p class="menu-item-price">$1,200</p>
+                        <p class="menu-item-description">Traditional martini with gin or vodka</p>
+                        <a href="menu-item.html?item=classic-martini" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1536935338788-846bb9981813?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Mojito">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Fresh Mojito</h3>
+                        <p class="menu-item-price">$900</p>
+                        <p class="menu-item-description">Refreshing mojito with fresh mint and lime</p>
+                        <a href="menu-item.html?item=fresh-mojito" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Desserts Section -->
+    <section class="menu-section" id="desserts">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Desserts</h2>
+                <p class="section-description">Sweet endings to your perfect meal</p>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Chocolate Lava Cake">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Chocolate Lava Cake</h3>
+                        <p class="menu-item-price">$1,200</p>
+                        <p class="menu-item-description">Warm chocolate cake with molten center and vanilla ice cream</p>
+                        <a href="menu-item.html?item=chocolate-lava-cake" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Tiramisu">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Tiramisu</h3>
+                        <p class="menu-item-price">$1,000</p>
+                        <p class="menu-item-description">Classic Italian dessert with coffee-soaked ladyfingers</p>
+                        <a href="menu-item.html?item=tiramisu" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Cheesecake">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>New York Cheesecake</h3>
+                        <p class="menu-item-price">$900</p>
+                        <p class="menu-item-description">Rich and creamy cheesecake with berry compote</p>
+                        <a href="menu-item.html?item=ny-cheesecake" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Ice Cream">
+                    </div>
+                    <div class="menu-item-content">
+                        <h3>Premium Ice Cream</h3>
+                        <p class="menu-item-price">$600</p>
+                        <p class="menu-item-description">Artisanal ice cream in various flavors</p>
+                        <a href="menu-item.html?item=premium-ice-cream" class="menu-item-btn">Order Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="menu-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Experience Eleven's?</h2>
+                <p>Book your table now and indulge in our exquisite menu</p>
+                <a href="reservation.html" class="btn btn-primary">Make Reservation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Eleven's</h3>
+                    <p>Luxury dining and lounge experience in Savanna-la-Mar, Jamaica.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Facebook</a>
+                        <a href="#" class="social-link">Twitter</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="menu.html">Menu</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p>Savanna-la-Mar, Jamaica</p>
+                    <p>Mon-Sun: 5:00 PM - 12:00 AM</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Reservation</h4>
+                    <p>Book your table for an unforgettable experience</p>
+                    <a href="reservation.html" class="btn btn-primary">Reserve Now</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Eleven's Restaurant. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="menu-script.js"></script>
+</body>
+</html>
