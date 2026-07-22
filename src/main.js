@@ -34,6 +34,13 @@ const SIZE = {
   Apple: 1.0, Orange: 1.0, Avocado: 1.0, Dragonfruit: 1.1,
   Grape: 1.05, Cherries: 0.95, Mangostan: 0.9,
 };
+// Flesh-cap radius per type, as a fraction of the fruit's unit radius —
+// smaller for slender/cluster fruit so the disc doesn't poke out.
+const CAP = {
+  Watermelon: 0.92, Pineapple: 0.78, Coconut: 0.8, Banana: 0.42,
+  Apple: 0.85, Orange: 0.85, Avocado: 0.85, Dragonfruit: 0.85,
+  Grape: 0.62, Cherries: 0.5, Mangostan: 0.78,
+};
 
 const FRUIT_SCALE = 1.35; // global size multiplier so fruit reads big on screen
 
@@ -47,6 +54,8 @@ const container = document.getElementById('game');
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.localClippingEnabled = true;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
 container.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -54,12 +63,15 @@ const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
 camera.position.set(0, 0, CAMERA_Z);
 camera.lookAt(0, 0, 0);
 
-scene.add(new THREE.AmbientLight(0xfff2dd, 1.35));
-const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-sun.position.set(-6, 10, 12);
+// Studio-style rig: one hot key from the upper left so fruit gets a bright
+// specular hot spot, a cool rim from the right for shape, low ambient fill.
+scene.add(new THREE.AmbientLight(0xfff2dd, 0.5));
+scene.add(new THREE.HemisphereLight(0xcfe4ff, 0x3a2410, 0.6));
+const sun = new THREE.DirectionalLight(0xfff4e0, 3.4);
+sun.position.set(-7, 12, 14);
 scene.add(sun);
-const rim = new THREE.DirectionalLight(0xffb36b, 0.7);
-rim.position.set(6, -4, 8);
+const rim = new THREE.DirectionalLight(0x9fc8ff, 1.1);
+rim.position.set(9, -3, 7);
 scene.add(rim);
 
 // World-space half extents of the frustum at the fruit plane (z = 0).
@@ -252,7 +264,9 @@ function buildWall() {
   if (wallMesh) { wallMesh.geometry.dispose(); scene.remove(wallMesh); }
   wallMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(wallHalfW * 2, wallHalfH * 2),
-    new THREE.MeshBasicMaterial({ map: wallScene === 'menu' ? menuTexture : woodTexture })
+    // toneMapped: false keeps the hand-painted wall colors exact while the
+    // fruit gets the filmic treatment
+    new THREE.MeshBasicMaterial({ map: wallScene === 'menu' ? menuTexture : woodTexture, toneMapped: false })
   );
   wallMesh.position.z = WALL_Z;
   scene.add(wallMesh);
@@ -437,8 +451,8 @@ function loadFruits() {
         geo.computeBoundingSphere();
         if (!sharedMaterial) {
           sharedMaterial = obj.material;
-          sharedMaterial.side = THREE.DoubleSide; // show flesh inside sliced halves
-          sharedMaterial.roughness = 0.7;
+          sharedMaterial.side = THREE.DoubleSide; // no see-through gaps on halves
+          sharedMaterial.roughness = 0.35;       // glossy skin catches the key light
           sharedMaterial.metalness = 0.0;
         }
         fruitDefs.push({
@@ -451,6 +465,180 @@ function loadFruits() {
       fruitDefs.length ? resolve() : reject(new Error('no fruit meshes found'));
     }, undefined, reject);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Flesh caps: procedural cross-section textures shown on sliced halves.
+// ---------------------------------------------------------------------------
+const capGeo = new THREE.CircleGeometry(1, 28);
+const fleshMats = {}; // type -> material (cloned per half so fades work)
+
+function fleshCanvas(type) {
+  const S = 256, c = document.createElement('canvas');
+  c.width = c.height = S;
+  const ctx = c.getContext('2d');
+  const cx = S / 2, r = S / 2;
+  const ring = (r0, r1, color) => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(cx, cx, r * r1, 0, Math.PI * 2);
+    ctx.arc(cx, cx, r * r0, 0, Math.PI * 2, true);
+    ctx.fill();
+  };
+  const disc = (rr, color) => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(cx, cx, r * rr, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  const seeds = (n, rr, size, color, jitter = 0.06) => {
+    ctx.fillStyle = color;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + rand(-0.2, 0.2);
+      const d = r * (rr + rand(-jitter, jitter));
+      ctx.save();
+      ctx.translate(cx + Math.cos(a) * d, cx + Math.sin(a) * d);
+      ctx.rotate(a + Math.PI / 2);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, size * 0.55, size, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  };
+  const radialLines = (n, r0, r1, color, w) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = w;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * r * r0, cx + Math.sin(a) * r * r0);
+      ctx.lineTo(cx + Math.cos(a) * r * r1, cx + Math.sin(a) * r * r1);
+      ctx.stroke();
+    }
+  };
+  switch (type) {
+    case 'Watermelon': {
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r);
+      g.addColorStop(0, '#ff6a5e'); g.addColorStop(0.75, '#f4413a'); g.addColorStop(1, '#e83a34');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      seeds(11, 0.52, 8, '#2a1a12'); seeds(7, 0.28, 7, '#3a241a');
+      ring(0.86, 0.94, '#f7f2df'); ring(0.94, 1, '#3d8a3d');
+      break;
+    }
+    case 'Apple': {
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r);
+      g.addColorStop(0, '#fbf3d0'); g.addColorStop(1, '#f2e2ac');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      ctx.fillStyle = '#5a3418';
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2;
+        ctx.save();
+        ctx.translate(cx + Math.cos(a) * r * 0.14, cx + Math.sin(a) * r * 0.14);
+        ctx.rotate(a + Math.PI / 2);
+        ctx.beginPath(); ctx.ellipse(0, 0, 4, 9, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      ring(0.95, 1, '#d8433a');
+      break;
+    }
+    case 'Orange': {
+      disc(1, '#ff9c2e');
+      radialLines(10, 0.12, 0.86, 'rgba(255,232,180,.85)', 7);
+      disc(0.1, '#ffd9a0');
+      ring(0.86, 0.94, '#ffe9c4'); ring(0.94, 1, '#f28313');
+      break;
+    }
+    case 'Banana': {
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r);
+      g.addColorStop(0, '#faf0cc'); g.addColorStop(1, '#f0e0a8');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      ctx.fillStyle = '#6a4a24';
+      for (const [dx, dy] of [[-14, -8], [16, -4], [0, 16]]) {
+        ctx.beginPath(); ctx.arc(cx + dx, cx + dy, 4.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ring(0.93, 1, '#f2d84a');
+      break;
+    }
+    case 'Coconut': {
+      disc(1, '#6a4a2e'); ring(0, 0.9, '#f7f2e8');
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r * 0.5);
+      g.addColorStop(0, 'rgba(220,228,232,.9)'); g.addColorStop(1, 'rgba(247,242,232,0)');
+      ctx.fillStyle = g; disc(0.5, ctx.fillStyle);
+      break;
+    }
+    case 'Dragonfruit': {
+      disc(1, '#f4f0ea');
+      ctx.fillStyle = '#241a18';
+      for (let i = 0; i < 90; i++) {
+        const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * r * 0.82;
+        ctx.beginPath();
+        ctx.ellipse(cx + Math.cos(a) * d, cx + Math.sin(a) * d, 2.4, 3.6, a, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ring(0.86, 0.93, '#f0d9e4'); ring(0.93, 1, '#e0407e');
+      break;
+    }
+    case 'Grape': {
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r);
+      g.addColorStop(0, '#efe2f4'); g.addColorStop(0.8, '#d9c2e8'); g.addColorStop(1, '#b08ac8');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      ring(0.9, 1, '#7a4ba0');
+      break;
+    }
+    case 'Cherries': {
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r);
+      g.addColorStop(0, '#e84a52'); g.addColorStop(1, '#b01f30');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      disc(0.22, '#f0d8b8'); ring(0.94, 1, '#8a1524');
+      break;
+    }
+    case 'Avocado': {
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r);
+      g.addColorStop(0, '#f2e8b0'); g.addColorStop(0.7, '#c8d470'); g.addColorStop(1, '#7ea23e');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      const pit = ctx.createRadialGradient(cx - 8, cx - 8, 4, cx, cx, r * 0.4);
+      pit.addColorStop(0, '#a06a3c'); pit.addColorStop(1, '#6a4222');
+      ctx.fillStyle = pit; disc(0.4, ctx.fillStyle);
+      ring(0.95, 1, '#3d5a1e');
+      break;
+    }
+    case 'Mangostan': {
+      disc(1, '#f7f0e6');
+      ctx.strokeStyle = 'rgba(190,160,150,.5)'; ctx.lineWidth = 3;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cx);
+        ctx.quadraticCurveTo(cx + Math.cos(a + 0.3) * r * 0.5, cx + Math.sin(a + 0.3) * r * 0.5,
+          cx + Math.cos(a) * r * 0.8, cx + Math.sin(a) * r * 0.8);
+        ctx.stroke();
+      }
+      ring(0.8, 0.9, '#e8c8d8'); ring(0.9, 1, '#7a2a5a');
+      break;
+    }
+    case 'Pineapple': {
+      const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, r);
+      g.addColorStop(0, '#ffe9a0'); g.addColorStop(1, '#f7c73e');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      radialLines(26, 0.15, 0.9, 'rgba(255,244,200,.55)', 3);
+      disc(0.13, '#f7e9b8'); ring(0.92, 1, '#8a5a24');
+      break;
+    }
+    default:
+      disc(1, JUICE[type] || '#ffce54');
+  }
+  return c;
+}
+
+function fleshMaterial(type) {
+  if (!fleshMats[type]) {
+    const tex = new THREE.CanvasTexture(fleshCanvas(type));
+    tex.colorSpace = THREE.SRGBColorSpace;
+    fleshMats[type] = new THREE.MeshStandardMaterial({
+      map: tex, roughness: 0.5, metalness: 0, side: THREE.DoubleSide,
+    });
+  }
+  return fleshMats[type].clone(); // cloned so each half can fade independently
 }
 
 // Bomb model: black sphere + neck + fuse, built from primitives.
@@ -797,13 +985,21 @@ function sliceFruit(f, seg) {
     mesh.position.copy(center);
     mesh.quaternion.copy(f.mesh.quaternion);
     mesh.scale.copy(f.mesh.scale);
+    // Flesh cap: a textured disc in the cut plane. The half only ever spins
+    // around the cut normal, so the disc stays exactly on the cut forever.
+    const capMat = fleshMaterial(f.def.type);
+    const cap = new THREE.Mesh(capGeo, capMat);
+    cap.scale.setScalar(CAP[f.def.type] ?? 0.8);
+    const nLocal = n.clone().applyQuaternion(mesh.quaternion.clone().invert()).normalize();
+    cap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), nLocal);
+    mesh.add(cap);
     scene.add(mesh);
     const vel = f.vel.clone().multiplyScalar(0.55).addScaledVector(n, rand(2.6, 4.2));
     vel.y += rand(0.5, 2);
     // Spin only around the cut normal: that rotation leaves the world-space
     // clip plane consistent with the mesh, so the cut face never drifts.
     const spin = rand(2.5, 5.5) * (Math.random() < 0.5 ? -1 : 1);
-    halves.push({ mesh, vel, n, plane, spin, life: 2.6 });
+    halves.push({ mesh, vel, n, plane, spin, capMat, life: 2.6 });
   }
 
   // FX
@@ -974,15 +1170,24 @@ function update(dt) {
     h.mesh.rotateOnWorldAxis(h.n, h.spin * simDt);
     h.plane.constant = -h.n.dot(h.mesh.position); // keep cut anchored to the half
     h.life -= simDt;
-    if (h.life < 0.5) h.mesh.material.opacity = h.life / 0.5;
+    if (h.life < 0.5) {
+      h.mesh.material.opacity = h.life / 0.5;
+      h.capMat.opacity = h.life / 0.5;
+    }
     if (h.life <= 0 || h.mesh.position.y < -halfH - 3) {
       scene.remove(h.mesh);
       h.mesh.material.dispose();
+      h.capMat.dispose();
       halves.splice(i, 1);
     }
   }
-  // enable transparency only when fading (material clone per half)
-  for (const h of halves) if (h.life < 0.5 && !h.mesh.material.transparent) h.mesh.material.transparent = true;
+  // enable transparency only when fading (materials are cloned per half)
+  for (const h of halves) {
+    if (h.life < 0.5 && !h.mesh.material.transparent) {
+      h.mesh.material.transparent = true;
+      h.capMat.transparent = true;
+    }
+  }
 
   updateWall(dt);
 
