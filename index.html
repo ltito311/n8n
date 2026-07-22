@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Fruit Ninja</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #1a0f08;
+    font-family: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+    touch-action: none;
+    -webkit-user-select: none; user-select: none;
+    cursor: crosshair;
+  }
+  #game { position: fixed; inset: 0; }
+  #game canvas { display: block; }
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    position: fixed; inset: 0; pointer-events: none; z-index: 10;
+    opacity: 0; transition: opacity .4s;
+  }
+  #hud.visible { opacity: 1; }
+  .hud-score {
+    position: absolute; top: 14px; left: 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hud-score .icon { font-size: 34px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.6)); }
+  .hud-score .value {
+    font-size: 42px; font-weight: 800; color: #ffd94a;
+    text-shadow: 0 2px 0 #7a4a12, 0 4px 8px rgba(0,0,0,.55);
+    font-variant-numeric: tabular-nums;
+  }
+  .hud-best {
+    position: absolute; top: 64px; left: 20px;
+    font-size: 15px; font-weight: 700; color: #ffe9b0;
+    text-shadow: 0 2px 4px rgba(0,0,0,.7); letter-spacing: .04em;
+  }
+  .hud-lives {
+    position: absolute; top: 16px; right: 18px;
+    display: flex; gap: 8px;
+  }
+  .hud-lives .x {
+    font-size: 30px; font-weight: 900; color: rgba(255,255,255,.35);
+    text-shadow: 0 2px 3px rgba(0,0,0,.6);
+    transition: color .25s, transform .25s;
+  }
+  .hud-lives .x.lost { color: #e33b2e; transform: scale(1.25); }
+
+  /* ---------- Overlays ---------- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 20;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; text-align: center;
+    background: radial-gradient(ellipse at center, rgba(20,10,4,.25) 0%, rgba(12,6,2,.72) 100%);
+    transition: opacity .45s; opacity: 1;
+  }
+  .overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .45s, visibility 0s .45s; }
+  .overlay.hidden .btn { pointer-events: none; }
+  .logo {
+    font-size: clamp(52px, 11vw, 110px); font-weight: 900; line-height: .95;
+    color: #ffd23f; letter-spacing: .01em;
+    text-shadow: 0 3px 0 #b3541e, 0 6px 0 #7a3410, 0 12px 24px rgba(0,0,0,.7);
+    transform: rotate(-3deg);
+  }
+  .logo .ninja { color: #ff5722; display: block; font-size: 1.18em;
+    text-shadow: 0 3px 0 #8c1d04, 0 6px 0 #5c1202, 0 12px 24px rgba(0,0,0,.7); }
+  .tagline { font-size: 18px; color: #ffe9b0; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.8); }
+  .btn {
+    pointer-events: auto; cursor: pointer; border: none; outline: none;
+    font: inherit; font-size: 26px; font-weight: 900; letter-spacing: .05em;
+    color: #4a1c00; padding: 16px 44px; border-radius: 999px;
+    background: linear-gradient(180deg, #ffe066 0%, #ffb52e 55%, #f28c12 100%);
+    box-shadow: 0 5px 0 #9c5406, 0 10px 22px rgba(0,0,0,.55), inset 0 2px 2px rgba(255,255,255,.65);
+    transform: translateZ(0); transition: transform .1s, box-shadow .1s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #9c5406, 0 6px 14px rgba(0,0,0,.5), inset 0 2px 2px rgba(255,255,255,.65); }
+  .gameover-title {
+    font-size: clamp(46px, 9vw, 92px); font-weight: 900; color: #ff3d2e;
+    text-shadow: 0 3px 0 #7a0e04, 0 6px 0 #4a0802, 0 12px 24px rgba(0,0,0,.8);
+    transform: rotate(-2deg);
+  }
+  .final-score { font-size: 30px; font-weight: 800; color: #ffd94a; text-shadow: 0 2px 6px rgba(0,0,0,.8); }
+  .new-best { font-size: 20px; font-weight: 900; color: #7dff6a; text-shadow: 0 2px 6px rgba(0,0,0,.8);
+    animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.12); } }
+  .new-best.hidden { display: none; }
+  .credit {
+    position: absolute; bottom: 10px; left: 0; right: 0;
+    font-size: 11px; color: rgba(255,233,176,.55); pointer-events: auto;
+  }
+  .credit a { color: rgba(255,217,74,.75); }
+  #loading { font-size: 20px; color: #ffe9b0; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.8); }
+</style>
+</head>
+<body>
+  <div id="game"></div>
+  <canvas id="fx"></canvas>
+
+  <div id="hud">
+    <div class="hud-score">
+      <span class="icon">🍉</span><span class="value" id="score">0</span>
+    </div>
+    <div class="hud-best" id="hudBest">BEST 0</div>
+    <div class="hud-lives" id="lives">
+      <span class="x">✕</span><span class="x">✕</span><span class="x">✕</span>
+    </div>
+  </div>
+
+  <div class="overlay" id="startOverlay">
+    <div class="logo">FRUIT<span class="ninja">NINJA</span></div>
+    <div class="tagline">Swipe to slice. Don't hit the bombs!</div>
+    <button class="btn" id="startBtn" disabled><span id="loading">Sharpening blade…</span></button>
+    <div class="credit">
+      Fruit models: <a href="https://sketchfab.com/3d-models/free-pack-fruits-ae101b55893843d7aacc6f2809fec387" target="_blank" rel="noreferrer">"Free Pack - Fruits"</a>
+      by <a href="https://sketchfab.com/polyone" target="_blank" rel="noreferrer">PolyOne Studio</a>, CC-BY-4.0
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="gameOverOverlay">
+    <div class="gameover-title">GAME OVER</div>
+    <div class="final-score" id="finalScore">Score: 0</div>
+    <div class="new-best hidden" id="newBest">★ NEW BEST! ★</div>
+    <button class="btn" id="restartBtn">PLAY AGAIN</button>
+  </div>
+
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.min.js" } }
+  </script>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
