@@ -58,7 +58,8 @@
     background: radial-gradient(ellipse at center, rgba(20,10,4,.25) 0%, rgba(12,6,2,.72) 100%);
     transition: opacity .45s; opacity: 1;
   }
-  .overlay.hidden { opacity: 0; pointer-events: none; }
+  .overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .45s, visibility 0s .45s; }
+  .overlay.hidden .btn { pointer-events: none; }
   .logo {
     font-size: clamp(52px, 11vw, 110px); font-weight: 900; line-height: .95;
     color: #ffd23f; letter-spacing: .01em;
