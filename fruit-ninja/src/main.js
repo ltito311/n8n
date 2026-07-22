@@ -212,8 +212,11 @@ const fx = document.getElementById('fx');
 const fxCtx = fx.getContext('2d');
 let DPR = 1;
 
+let lastW = 0, lastH = 0;
 function resize() {
   const w = innerWidth, h = innerHeight;
+  if (!w || !h) return; // iframe not laid out yet — try again next frame
+  lastW = w; lastH = h;
   DPR = Math.min(devicePixelRatio, 2);
   renderer.setSize(w, h);
   camera.aspect = w / h;
@@ -225,7 +228,22 @@ function resize() {
   buildWall();
 }
 addEventListener('resize', resize);
+if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 resize();
+
+// Surface fatal errors on screen — embedded viewers have no console.
+function showFatal(msg) {
+  let el = document.getElementById('fatal');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fatal';
+    el.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:rgba(120,10,0,.92);color:#ffe9b0;font:12px monospace;padding:8px 10px;border-radius:8px;word-break:break-all;';
+    document.body.appendChild(el);
+  }
+  el.textContent = 'Error: ' + msg;
+}
+addEventListener('error', (e) => showFatal(e.message || String(e.error || e)));
+addEventListener('unhandledrejection', (e) => showFatal(String(e.reason)));
 
 // ---------------------------------------------------------------------------
 // Audio: tiny procedural synth, created on first user gesture.
@@ -386,8 +404,14 @@ const texts = [];    // floating score/combo text
 let flash = 0;       // white screen flash alpha
 let shake = 0;       // camera shake amount
 
+// localStorage throws in some sandboxed embeds — degrade to in-memory best.
+const storage = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* session-only */ } },
+};
+
 let state = 'menu'; // menu | playing | over
-let score = 0, best = Number(localStorage.getItem('fruitNinjaBest') || 0);
+let score = 0, best = Number(storage.get('fruitNinjaBest') || 0);
 let lives = MAX_LIVES;
 let spawnTimer = 1.2;
 let elapsed = 0;
@@ -443,7 +467,7 @@ function gameOver(byBomb) {
   if (byBomb) { flash = 1; shake = 1; playBomb(); }
   if (score > best) {
     best = score;
-    localStorage.setItem('fruitNinjaBest', String(best));
+    storage.set('fruitNinjaBest', String(best));
     newBestEl.classList.remove('hidden');
   } else {
     newBestEl.classList.add('hidden');
@@ -822,6 +846,9 @@ document.addEventListener('visibilitychange', () => {
 
 function loop() {
   requestAnimationFrame(loop);
+  // Self-heal: mobile embeds can lay out after load without firing resize.
+  if (innerWidth !== lastW || innerHeight !== lastH) resize();
+  if (!lastW || !lastH) return;
   const dt = Math.min(clock.getDelta(), 0.05);
   if (!paused) {
     update(dt);
