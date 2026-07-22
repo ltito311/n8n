@@ -58,22 +58,34 @@
   }
   #pauseBtn:active { transform: scale(.92); }
   #pauseBtn img { width: 100%; height: 100%; }
-  #powerChip {
-    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-    display: none; align-items: center; gap: 8px;
-    background: rgba(30,14,4,.66); border-radius: 999px; padding: 6px 14px 6px 8px;
-    box-shadow: 0 3px 10px rgba(0,0,0,.4);
+  #powerChips {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 6px;
   }
-  #powerChip.on { display: flex; }
-  #powerChip img { width: 40px; height: 32px; object-fit: contain; }
-  #powerChip .bar {
-    width: 90px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.18);
-    overflow: hidden;
+  .chip {
+    padding: 7px 20px; transform: skewX(-8deg);
+    font-size: 19px; font-weight: 900; font-style: italic; letter-spacing: .06em;
+    color: #fff; text-shadow: 0 2px 2px rgba(0,0,0,.5);
+    border: 2px solid rgba(255,255,255,.55); border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.45), inset 0 2px 3px rgba(255,255,255,.4);
+    animation: chippulse 1s ease-in-out infinite;
   }
-  #powerChip .bar i {
-    display: block; height: 100%; border-radius: 4px; background: #ffd23f;
-    transition: width .1s linear;
+  .chip.freeze { background: linear-gradient(180deg, #6db4ec 0%, #2e7cc4 60%, #1d5a90 100%); }
+  .chip.frenzy { background: linear-gradient(180deg, #ffb52e 0%, #f07818 60%, #c8500c 100%); }
+  .chip.double { background: linear-gradient(180deg, #ffe066 0%, #f0a824 60%, #c07808 100%); color: #6a3404; text-shadow: 0 1px 1px rgba(255,255,255,.5); }
+  @keyframes chippulse { 50% { transform: skewX(-8deg) scale(1.06); } }
+  #timer {
+    position: absolute; top: 10px; right: 16px;
+    display: none; align-items: center; gap: 6px;
   }
+  #timer.on { display: flex; }
+  #timer img { width: 40px; height: 46px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+  #timer .digits {
+    font-size: 44px; font-weight: 900; font-variant-numeric: tabular-nums;
+    color: #ffd94a;
+    text-shadow: 0 2px 0 #7a4a12, 0 4px 8px rgba(0,0,0,.55);
+  }
+  #timer.low .digits { color: #ff5238; text-shadow: 0 2px 0 #6a1204, 0 4px 8px rgba(0,0,0,.6); }
 
   /* ---------- Overlays ---------- */
   .overlay {
@@ -86,17 +98,24 @@
   .overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .45s, visibility 0s .45s; }
   .overlay.hidden .btn { pointer-events: none; }
   .logo {
-    font-size: clamp(42px, 8vw, 84px); font-weight: 900; line-height: .95;
-    color: #ffd23f; letter-spacing: .01em;
-    text-shadow: 0 3px 0 #b3541e, 0 6px 0 #7a3410, 0 12px 24px rgba(0,0,0,.7);
+    font-size: clamp(40px, 7.5vw, 78px); font-weight: 900; line-height: .95;
+    letter-spacing: .01em;
     transform: rotate(-3deg);
+    text-shadow: 0 3px 0 rgba(60,20,0,.55), 0 8px 18px rgba(0,0,0,.6);
   }
-  .logo .ninja { color: #ff5722; display: block; font-size: 1.18em;
-    text-shadow: 0 3px 0 #8c1d04, 0 6px 0 #5c1202, 0 12px 24px rgba(0,0,0,.7); }
+  .logo .l1 { color: #b04ce0; } .logo .l2 { color: #f04434; }
+  .logo .l3 { color: #6ac03a; } .logo .l4 { color: #f79a1e; }
+  .logo .l5 { color: #f7d02e; }
+  .logo .ninja {
+    color: #fdfdfd; display: block; font-size: 1.14em;
+    text-shadow: 0 3px 0 #45505c, 0 6px 0 #2b333c, 0 12px 24px rgba(0,0,0,.7);
+  }
 
-  /* Stone mode-ring start node (rotating CLASSIC text around the 3D melon) */
+  .mode-row { display: flex; gap: clamp(14px, 4vw, 48px); align-items: center; justify-content: center; flex-wrap: wrap; }
+
+  /* Mode rings (rotating mode text around a 3D fruit), FN2-style colors */
   .mode-ring {
-    position: relative; width: min(46vw, 250px); height: min(46vw, 250px);
+    position: relative; width: min(38vw, 230px); height: min(38vw, 230px);
     pointer-events: auto; cursor: pointer;
     transition: transform .15s;
   }
@@ -104,18 +123,29 @@
   .mode-ring:active { transform: scale(.97); }
   .mode-ring .stone {
     position: absolute; inset: 0; border-radius: 50%;
-    background:
-      radial-gradient(closest-side,
-        rgba(0,0,0,0) 55%,
-        #4a443c 56.5%, #8f8878 60%, #b8b0a0 64%,
-        #a29a8a 70%, #6f695e 76%, #4a443c 78.5%,
-        rgba(0,0,0,0) 80%);
     filter: drop-shadow(0 6px 14px rgba(0,0,0,.55));
+  }
+  .mode-ring.blue .stone {
+    background: radial-gradient(closest-side,
+      rgba(0,0,0,0) 55%, #123a66 56.5%, #2e7cc4 60%, #6db4ec 64%,
+      #3d8ed4 70%, #1d5a90 76%, #123a66 78.5%, rgba(0,0,0,0) 80%);
+  }
+  .mode-ring.gold .stone {
+    background: radial-gradient(closest-side,
+      rgba(0,0,0,0) 55%, #7a4a0c 56.5%, #d89c24 60%, #f7dc82 64%,
+      #e8b73e 70%, #9c6a14 76%, #7a4a0c 78.5%, rgba(0,0,0,0) 80%);
   }
   .mode-ring svg { position: absolute; inset: 0; animation: ringspin 16s linear infinite; }
   .mode-ring text {
-    font: 900 21px "Trebuchet MS", Verdana, sans-serif;
-    fill: #7a1f14; letter-spacing: 3px;
+    font: 900 23px "Trebuchet MS", Verdana, sans-serif;
+    letter-spacing: 3px;
+  }
+  .mode-ring.blue text { fill: #f2f8ff; }
+  .mode-ring.gold text { fill: #c42e1a; }
+  .mode-label {
+    position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%);
+    font-size: 14px; font-weight: 900; letter-spacing: .08em; color: #ffe9b0;
+    text-shadow: 0 2px 4px rgba(0,0,0,.8);
   }
   @keyframes ringspin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .mode-ring svg { animation: none; } }
@@ -157,18 +187,30 @@
     </div>
     <div class="hud-best" id="hudBest">BEST 0</div>
     <div class="hud-lives" id="lives"></div>
+    <div id="timer"><img alt="" /><span class="digits">0:60</span></div>
     <button id="pauseBtn" aria-label="Pause"></button>
-    <div id="powerChip"><img alt="" /><span class="bar"><i></i></span></div>
+    <div id="powerChips"></div>
   </div>
 
   <div class="overlay" id="startOverlay">
-    <div class="logo">FRUIT<span class="ninja">NINJA</span></div>
-    <div class="mode-ring" id="startRing" role="button" aria-label="Start Classic game" tabindex="0">
-      <div class="stone"></div>
-      <svg viewBox="0 0 250 250">
-        <defs><path id="ringPath" d="M125,125 m-101,0 a101,101 0 1,1 202,0 a101,101 0 1,1 -202,0" fill="none" /></defs>
-        <text><textPath href="#ringPath">CLASSIC &#160;&#8226;&#160; CLASSIC &#160;&#8226;&#160; CLASSIC &#160;&#8226;&#160;</textPath></text>
-      </svg>
+    <div class="logo"><span class="l1">F</span><span class="l2">R</span><span class="l3">U</span><span class="l4">I</span><span class="l5">T</span><span class="ninja">NINJA</span></div>
+    <div class="mode-row">
+      <div class="mode-ring blue" id="classicRing" role="button" aria-label="Start Classic game" tabindex="0">
+        <div class="stone"></div>
+        <svg viewBox="0 0 250 250">
+          <defs><path id="ringPathC" d="M125,125 m-101,0 a101,101 0 1,1 202,0 a101,101 0 1,1 -202,0" fill="none" /></defs>
+          <text><textPath href="#ringPathC">CLASSIC &#160;&#8226;&#160; CLASSIC &#160;&#8226;&#160; CLASSIC &#160;&#8226;&#160;</textPath></text>
+        </svg>
+        <div class="mode-label">3 LIVES</div>
+      </div>
+      <div class="mode-ring gold" id="arcadeRing" role="button" aria-label="Start Arcade game" tabindex="0">
+        <div class="stone"></div>
+        <svg viewBox="0 0 250 250">
+          <defs><path id="ringPathA" d="M125,125 m-101,0 a101,101 0 1,1 202,0 a101,101 0 1,1 -202,0" fill="none" /></defs>
+          <text><textPath href="#ringPathA">ARCADE &#160;&#9733;&#160; ARCADE &#160;&#9733;&#160; ARCADE &#160;&#9733;&#160;</textPath></text>
+        </svg>
+        <div class="mode-label">60 SECONDS</div>
+      </div>
     </div>
     <div class="tagline" id="loading">Sharpening blade…</div>
     <div class="credit">
@@ -181,10 +223,11 @@
     <div class="gameover-title" style="color:#ffd23f;text-shadow:0 3px 0 #b3541e,0 6px 0 #7a3410,0 12px 24px rgba(0,0,0,.8)">PAUSED</div>
     <button class="btn" id="resumeBtn">RESUME</button>
     <button class="btn" id="quitBtn" style="font-size:18px;padding:10px 30px">QUIT TO MENU</button>
+    <button id="soundBtn" aria-label="Toggle sound" style="pointer-events:auto;width:56px;height:56px;border:0;padding:0;background:none;cursor:pointer;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))"><img style="width:100%;height:100%;object-fit:contain" alt="" /></button>
   </div>
 
   <div class="overlay hidden" id="gameOverOverlay">
-    <div class="gameover-title">GAME OVER</div>
+    <div class="gameover-title" id="gameOverTitle">GAME OVER</div>
     <div class="final-score" id="finalScore">Score: 0</div>
     <div class="new-best hidden" id="newBest">★ NEW BEST! ★</div>
     <button class="btn" id="restartBtn">PLAY AGAIN</button>

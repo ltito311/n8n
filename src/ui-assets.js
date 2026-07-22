@@ -8,4 +8,7 @@ export const UI = {
   bananaFreeze: './assets/ui/banana_freeze.png',
   bananaFrenzy: './assets/ui/banana_frenzy.png',
   bananaDouble: './assets/ui/banana_double.png',
+  stopwatch: './assets/ui/stopwatch.png',
+  soundOn: './assets/ui/sound_on.png',
+  soundOff: './assets/ui/sound_off.png',
 };

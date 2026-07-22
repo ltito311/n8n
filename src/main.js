@@ -98,7 +98,8 @@ const woodTexture = new THREE.CanvasTexture(woodCanvas);
 woodTexture.colorSpace = THREE.SRGBColorSpace;
 let splatDirty = false, splatActiveUntil = 0, splatFadeAcc = 0;
 
-function paintWood() {
+function paintWood(style = 'planks') {
+  if (style === 'tiles') { paintTiles(); return; }
   const ctx = baseCanvas.getContext('2d');
   const plank = WOOD_H / 8;
   for (let p = 0; p < 8; p++) {
@@ -144,6 +145,78 @@ function paintWood() {
   ctx.fillStyle = v;
   ctx.fillRect(0, 0, WOOD_W, WOOD_H);
   splatCtx.clearRect(0, 0, WOOD_W, WOOD_H);
+  woodCtx.drawImage(baseCanvas, 0, 0);
+  woodTexture.needsUpdate = true;
+}
+
+// Arcade backdrop: cool blue-grey tiled wall with blade slash marks (FN2 style).
+function paintTiles() {
+  const ctx = baseCanvas.getContext('2d');
+  const W = WOOD_W, H = WOOD_H;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#a8bfca');
+  g.addColorStop(0.55, '#8aa5b4');
+  g.addColorStop(1, '#6e8a9c');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  // big soft diamond pattern
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(Math.PI / 4);
+  const dsz = 340;
+  for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) {
+    if ((i + j) % 2) continue;
+    ctx.fillStyle = 'rgba(255,255,255,.05)';
+    ctx.fillRect(i * dsz - dsz / 2, j * dsz - dsz / 2, dsz, dsz);
+  }
+  ctx.restore();
+  // mountain silhouettes low in frame
+  ctx.fillStyle = 'rgba(58,84,104,.4)';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 30) {
+    ctx.lineTo(x, H * 0.72 - Math.abs(Math.sin(x * 0.008 + 2)) * 150);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+  // tile grid with grout
+  const tile = W / 7;
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const x = c * tile, y = r * tile;
+    ctx.fillStyle = `rgba(255,255,255,${rand(0.015, 0.05)})`;
+    ctx.fillRect(x + 2, y + 2, tile - 4, tile - 4);
+    ctx.strokeStyle = 'rgba(40,58,72,.35)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x + 1.5, y + 1.5, tile - 3, tile - 3);
+    ctx.strokeStyle = 'rgba(255,255,255,.14)';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(x + 4, y + 4, tile - 8, tile - 8);
+  }
+  // old blade slash marks
+  for (let i = 0; i < 7; i++) {
+    const x1 = rand(-100, W), y1 = rand(0, H);
+    const a = rand(-0.7, 0.7), len = rand(300, 760);
+    const x2 = x1 + Math.cos(a) * len, y2 = y1 + Math.sin(a) * len;
+    const sg = ctx.createLinearGradient(x1, y1, x2, y2);
+    sg.addColorStop(0, 'rgba(240,248,252,0)');
+    sg.addColorStop(0.5, `rgba(240,248,252,${rand(0.12, 0.25)})`);
+    sg.addColorStop(1, 'rgba(240,248,252,0)');
+    ctx.strokeStyle = sg;
+    ctx.lineWidth = rand(1.5, 3.5);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+  // vignette
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.8);
+  v.addColorStop(0, 'rgba(0,0,0,0)');
+  v.addColorStop(1, 'rgba(20,34,46,.4)');
+  ctx.fillStyle = v;
+  ctx.fillRect(0, 0, W, H);
+  splatCtx.clearRect(0, 0, WOOD_W, WOOD_H);
+  woodCtx.clearRect(0, 0, WOOD_W, WOOD_H);
   woodCtx.drawImage(baseCanvas, 0, 0);
   woodTexture.needsUpdate = true;
 }
@@ -362,7 +435,7 @@ function noiseBuffer(dur) {
   return buf;
 }
 function playSwoosh() {
-  if (!AC) return;
+  if (!AC || muted) return;
   const t = AC.currentTime;
   const src = AC.createBufferSource(); src.buffer = noiseBuffer(0.22);
   const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.1;
@@ -374,7 +447,7 @@ function playSwoosh() {
   src.connect(f).connect(g).connect(AC.destination); src.start(t);
 }
 function playSplat() {
-  if (!AC) return;
+  if (!AC || muted) return;
   const t = AC.currentTime;
   const src = AC.createBufferSource(); src.buffer = noiseBuffer(0.14);
   const f = AC.createBiquadFilter(); f.type = 'lowpass';
@@ -390,7 +463,7 @@ function playSplat() {
   o.connect(og).connect(AC.destination); o.start(t); o.stop(t + 0.12);
 }
 function playThrow() {
-  if (!AC) return;
+  if (!AC || muted) return;
   const t = AC.currentTime;
   const o = AC.createOscillator(); o.type = 'triangle';
   o.frequency.setValueAtTime(rand(280, 340), t);
@@ -402,7 +475,7 @@ function playThrow() {
   o.connect(g).connect(AC.destination); o.start(t); o.stop(t + 0.2);
 }
 function playBomb() {
-  if (!AC) return;
+  if (!AC || muted) return;
   const t = AC.currentTime;
   const src = AC.createBufferSource(); src.buffer = noiseBuffer(0.9);
   const f = AC.createBiquadFilter(); f.type = 'lowpass';
@@ -417,7 +490,7 @@ function playBomb() {
   o.connect(og).connect(AC.destination); o.start(t); o.stop(t + 0.8);
 }
 function playMiss() {
-  if (!AC) return;
+  if (!AC || muted) return;
   const t = AC.currentTime;
   const o = AC.createOscillator(); o.type = 'square';
   o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.25);
@@ -687,9 +760,15 @@ const POWERS = {
   double: { tint: 0xffd24a, dur: 8, label: 'DOUBLE POINTS!', icon: UI.bananaDouble },
 };
 let freezeT = 0, doubleT = 0;      // remaining effect time
-let activePower = null, activePowerT = 0, activePowerDur = 1;
 let frenzyQueue = 0, frenzyTimer = 0;
-let menuMelon = null;
+const menuFruits = [];             // fruit meshes pinned inside menu rings
+const stars = [];                  // star confetti on the fx canvas
+const sparkles = [];               // blade sparkles
+
+const ARCADE_TIME = 60;
+let mode = 'classic', lastMode = 'classic';
+let arcadeT = 0;
+let muted = false;
 
 // localStorage throws in some sandboxed embeds — degrade to in-memory best.
 const storage = {
@@ -711,30 +790,53 @@ const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('hudBest');
 const livesEl = document.getElementById('lives');
 const startOverlay = document.getElementById('startOverlay');
-const startRing = document.getElementById('startRing');
 const loadingEl = document.getElementById('loading');
 const overOverlay = document.getElementById('gameOverOverlay');
 const finalScoreEl = document.getElementById('finalScore');
+const gameOverTitle = document.getElementById('gameOverTitle');
 const newBestEl = document.getElementById('newBest');
 const restartBtn = document.getElementById('restartBtn');
 const pauseOverlay = document.getElementById('pauseOverlay');
 const pauseBtn = document.getElementById('pauseBtn');
 const resumeBtn = document.getElementById('resumeBtn');
 const quitBtn = document.getElementById('quitBtn');
-const powerChip = document.getElementById('powerChip');
-const powerIcon = powerChip.querySelector('img');
-const powerBar = powerChip.querySelector('.bar i');
+const soundBtn = document.getElementById('soundBtn');
+const powerChips = document.getElementById('powerChips');
+const timerEl = document.getElementById('timer');
+const timerDigits = timerEl.querySelector('.digits');
+const classicRing = document.getElementById('classicRing');
+const arcadeRing = document.getElementById('arcadeRing');
 bestEl.textContent = 'BEST ' + best;
 let assetsReady = false;
 
 // sprite-based UI chrome
 pauseBtn.innerHTML = `<img src="${UI.pause}" alt="" />`;
 pauseBtn.style.display = 'none';
+timerEl.querySelector('img').src = UI.stopwatch;
+muted = storage.get('fruitNinjaMuted') === '1';
+const soundImg = soundBtn.querySelector('img');
+soundImg.src = muted ? UI.soundOff : UI.soundOn;
 for (let i = 0; i < MAX_LIVES; i++) {
   const img = document.createElement('img');
   img.src = UI.xRed;
   img.alt = 'life';
   livesEl.appendChild(img);
+}
+
+// FN2-style banner chips for active effects
+const chipEls = {};
+const CHIP_TEXT = { freeze: 'FREEZE', frenzy: 'FRENZY', double: '2X POINTS' };
+function setChip(kind, on) {
+  if (on && !chipEls[kind]) {
+    const el = document.createElement('div');
+    el.className = 'chip ' + kind;
+    el.textContent = CHIP_TEXT[kind];
+    powerChips.appendChild(el);
+    chipEls[kind] = el;
+  } else if (!on && chipEls[kind]) {
+    chipEls[kind].remove();
+    delete chipEls[kind];
+  }
 }
 
 function setScore(v) {
@@ -756,38 +858,52 @@ function clearWorld() {
   fruits.length = halves.length = droplets.length = texts.length = 0;
 }
 
-function spawnMenuMelon() {
-  const def = fruitDefs.find((d) => d.type === 'Watermelon') || fruitDefs[0];
-  if (!def || menuMelon) return;
-  menuMelon = new THREE.Mesh(def.geometry, sharedMaterial);
-  menuMelon.scale.setScalar(1.9);
-  menuMelon.position.set(0, 0, 2);
-  menuMelon.rotation.set(0.35, 0, -0.1);
-  scene.add(menuMelon);
+function spawnMenuFruits() {
+  if (menuFruits.length || !fruitDefs.length) return;
+  for (const [type, el] of [['Watermelon', classicRing], ['Banana', arcadeRing]]) {
+    const def = fruitDefs.find((d) => d.type === type) || fruitDefs[0];
+    const mesh = new THREE.Mesh(def.geometry, sharedMaterial);
+    mesh.position.set(0, 0, 2);
+    mesh.rotation.set(0.35, 0, -0.1);
+    scene.add(mesh);
+    menuFruits.push({ mesh, el });
+  }
 }
-function removeMenuMelon() {
-  if (menuMelon) { scene.remove(menuMelon); menuMelon = null; }
+function removeMenuFruits() {
+  for (const m of menuFruits) scene.remove(m.mesh);
+  menuFruits.length = 0;
 }
 
 function resetPowers() {
   freezeT = doubleT = 0;
   frenzyQueue = 0;
-  activePower = null;
-  powerChip.classList.remove('on');
+  for (const k of Object.keys(chipEls)) setChip(k, false);
 }
 
-function startGame() {
+function formatTime(t) {
+  const s = Math.max(0, Math.ceil(t));
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+function startGame(m = lastMode) {
   if (!assetsReady) return;
+  mode = m === 'arcade' ? 'arcade' : 'classic';
+  lastMode = mode;
   audioInit();
   clearWorld();
-  removeMenuMelon();
+  removeMenuFruits();
   petals.length = 0;
   resetPowers();
-  paintWood(); // fresh, unstained wall
+  paintWood(mode === 'arcade' ? 'tiles' : 'planks'); // fresh, unstained wall
   setWallScene('wood');
   setScore(0);
   lives = MAX_LIVES;
   updateLivesUI();
+  arcadeT = ARCADE_TIME;
+  livesEl.style.display = mode === 'arcade' ? 'none' : 'flex';
+  timerEl.classList.toggle('on', mode === 'arcade');
+  timerEl.classList.remove('low');
+  timerDigits.textContent = formatTime(ARCADE_TIME);
   elapsed = 0;
   spawnTimer = 0.6;
   comboCount = 0;
@@ -818,7 +934,8 @@ function quitToMenu() {
   clearWorld();
   resetPowers();
   setWallScene('menu');
-  spawnMenuMelon();
+  spawnMenuFruits();
+  timerEl.classList.remove('on');
   pauseOverlay.classList.add('hidden');
   overOverlay.classList.add('hidden');
   hud.classList.remove('visible');
@@ -826,10 +943,12 @@ function quitToMenu() {
   startOverlay.classList.remove('hidden');
 }
 
-function gameOver(byBomb) {
+function gameOver(byBomb, byTime = false) {
   state = 'over';
   resetPowers();
   pauseBtn.style.display = 'none';
+  timerEl.classList.remove('on');
+  gameOverTitle.textContent = byTime ? "TIME'S UP!" : 'GAME OVER';
   if (byBomb) { flash = 1; shake = 1; playBomb(); }
   if (score > best) {
     best = score;
@@ -889,7 +1008,8 @@ function spawnWave() {
   const n = 1 + Math.floor(rand(0, 2.2 + difficulty * 2.6));
   const bombChance = score < 4 ? 0 : 0.10 + difficulty * 0.16;
   // rare power-up banana, once things are rolling and no effect is active
-  if (score >= 8 && !activePower && Math.random() < 0.09) {
+  const powerActive = freezeT > 0 || doubleT > 0 || frenzyQueue > 0;
+  if (score >= 8 && !powerActive && Math.random() < 0.09) {
     const type = pick(Object.keys(POWERS));
     setTimeout(() => { if (state === 'playing') launchOne(false, type); }, rand(60, 400));
   }
@@ -914,7 +1034,15 @@ function addPoint(x, y) {
   if (last) {
     const dt = Math.max(1, t - last.t);
     const speed = Math.hypot(x - last.x, y - last.y) / dt; // px per ms
-    if (speed > 0.25) sliceSegments.push({ x1: last.x, y1: last.y, x2: x, y2: y });
+    if (speed > 0.25) {
+      sliceSegments.push({ x1: last.x, y1: last.y, x2: x, y2: y });
+      if (Math.random() < 0.35) {
+        sparkles.push({
+          x: x + rand(-10, 10), y: y + rand(-10, 10),
+          r: rand(4, 9), rot: rand(0, 3.14), life: 0.4, maxLife: 0.4,
+        });
+      }
+    }
   }
   if (trail.length > 40) trail.shift();
 }
@@ -961,7 +1089,16 @@ function sliceFruit(f, seg) {
 
   if (f.isBomb) {
     bombExplosion(f.mesh.position);
-    gameOver(true);
+    if (mode === 'arcade') {
+      // Blitz rules: bombs cost points, not the run
+      setScore(Math.max(0, score - 10));
+      const s = toScreen(f.mesh.position);
+      texts.push({ str: '-10', x: s.x, y: s.y, vy: -0.05, life: 1.2, size: 34, color: '#ff5238' });
+      flash = 0.35; shake = 0.5;
+      playBomb();
+    } else {
+      gameOver(true);
+    }
     return;
   }
 
@@ -1005,6 +1142,7 @@ function sliceFruit(f, seg) {
   // FX
   const s = toScreen(center);
   spawnDroplets(s.x, s.y, f.def.juice, 16 + f.radius * 8);
+  spawnStars(s.x, s.y, 4 + Math.floor(f.radius * 2));
   splatWall(center, f.def.juice, f.radius);
   playSplat();
 
@@ -1036,11 +1174,7 @@ function activatePower(type, s) {
   if (type === 'freeze') freezeT = P.dur;
   if (type === 'double') doubleT = P.dur;
   if (type === 'frenzy') { frenzyQueue = 9; frenzyTimer = 0.1; }
-  if (P.dur > 0) {
-    activePower = type; activePowerT = P.dur; activePowerDur = P.dur;
-    powerIcon.src = P.icon;
-    powerChip.classList.add('on');
-  }
+  spawnStars(s.x, s.y, 10);
 }
 
 function resolveCombo() {
@@ -1061,6 +1195,31 @@ function bombExplosion(pos) {
   const s = toScreen(pos);
   spawnDroplets(s.x, s.y, '#ffb347', 40);
   spawnDroplets(s.x, s.y, '#555555', 30);
+}
+
+function spawnStars(x, y, n) {
+  const palette = ['#f7902e', '#f7c33e', '#e8452e', '#ffdf6b'];
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, Math.PI * 2), sp = rand(1.5, 6);
+    stars.push({
+      x, y,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 2.5,
+      r: rand(5, 11), rot: rand(0, 6.28), vrot: rand(-4, 4),
+      color: pick(palette), life: rand(0.7, 1.2), maxLife: 1.2,
+    });
+  }
+}
+
+function drawStar(ctx, x, y, r, rot) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const rad = i % 2 === 0 ? r : r * 0.45;
+    const a = rot + (i / 10) * Math.PI * 2;
+    const px = x + Math.cos(a) * rad, py = y + Math.sin(a) * rad;
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
 }
 
 function spawnDroplets(x, y, color, n) {
@@ -1086,34 +1245,41 @@ function update(dt) {
 
   if (freezeT > 0) freezeT = Math.max(0, freezeT - dt);
   if (doubleT > 0) doubleT = Math.max(0, doubleT - dt);
-  if (activePower) {
-    activePowerT -= dt;
-    powerBar.style.width = Math.max(0, (activePowerT / activePowerDur) * 100) + '%';
-    if (activePowerT <= 0) { activePower = null; powerChip.classList.remove('on'); }
-  }
+  setChip('freeze', freezeT > 0);
+  setChip('double', doubleT > 0);
+  setChip('frenzy', frenzyQueue > 0);
   if (frenzyQueue > 0 && state === 'playing') {
     frenzyTimer -= dt;
     if (frenzyTimer <= 0) { launchOne(false); frenzyQueue--; frenzyTimer = rand(0.12, 0.3); }
   }
-  if (menuMelon) {
-    menuMelon.rotation.y += dt * 0.9;
-    // pin the melon to the center of the start ring, whatever the layout
-    const r = startRing.getBoundingClientRect();
+  // pin menu fruit to the center of their rings, whatever the layout
+  for (const m of menuFruits) {
+    m.mesh.rotation.y += dt * 0.9;
+    const r = m.el.getBoundingClientRect();
     if (r.width) {
       const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      const dist = CAMERA_Z - menuMelon.position.z;
+      const dist = CAMERA_Z - m.mesh.position.z;
       const th = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * dist;
-      menuMelon.position.x = ((cx / innerWidth) * 2 - 1) * th * camera.aspect;
-      menuMelon.position.y = (1 - (cy / innerHeight) * 2) * th;
-      // size the melon to the ring's inner hole
-      const px = r.width * 0.5 * 0.55; // hole radius in css px
+      m.mesh.position.x = ((cx / innerWidth) * 2 - 1) * th * camera.aspect;
+      m.mesh.position.y = (1 - (cy / innerHeight) * 2) * th;
+      const px = r.width * 0.5 * 0.55; // ring hole radius in css px
       const world = (px / (innerHeight / 2)) * th;
-      menuMelon.scale.setScalar(Math.max(0.8, world));
+      m.mesh.scale.setScalar(Math.max(0.7, world));
+    }
+  }
+
+  if (state === 'playing' && mode === 'arcade') {
+    arcadeT -= dt;
+    timerDigits.textContent = formatTime(arcadeT);
+    timerEl.classList.toggle('low', arcadeT < 10);
+    if (arcadeT <= 0) {
+      gameOver(false, true);
+      return;
     }
   }
 
   if (state === 'playing') {
-    spawnTimer -= simDt;
+    spawnTimer -= simDt * (mode === 'arcade' ? 1.25 : 1);
     if (spawnTimer <= 0) spawnWave();
 
     if (comboCount > 0) {
@@ -1153,7 +1319,7 @@ function update(dt) {
     if (f.vel.y < 0 && f.mesh.position.y < -halfH - 2) {
       fruits.splice(i, 1);
       scene.remove(f.mesh);
-      if (!f.isBomb && !f.power && state === 'playing') {
+      if (!f.isBomb && !f.power && state === 'playing' && mode === 'classic') {
         lives--;
         updateLivesUI();
         playMiss();
@@ -1236,43 +1402,96 @@ function drawFX(dt) {
     petals.length = 0;
   }
 
-  // blade trail: tapered ribbon through recent points
+  // golden comet blade: filled tapered ribbon with a pointed head + sparkles
   const now = performance.now();
-  while (trail.length && now - trail[0].t > 130) trail.shift();
-  if (pointerDown && trail.length > 2) {
+  // keep a few points even on slow frames so the ribbon survives low fps
+  while (trail.length > 4 && now - trail[0].t > 150) trail.shift();
+  const newestAge = trail.length ? now - trail[trail.length - 1].t : Infinity;
+  if (pointerDown && trail.length > 2 && newestAge < 300) {
     const pts = trail;
-    ctx.save();
-    ctx.lineJoin = ctx.lineCap = 'round';
-    // outer glow
-    ctx.globalCompositeOperation = 'lighter';
-    for (const [width, color, blur] of [
-      [16, 'rgba(120,190,255,0.28)', 18],
-      [9, 'rgba(255,255,255,0.55)', 8],
-    ]) {
-      ctx.shadowColor = color; ctx.shadowBlur = blur;
-      ctx.strokeStyle = color;
-      for (let i = 1; i < pts.length; i++) {
-        const age = (now - pts[i].t) / 130;
-        ctx.lineWidth = Math.max(0.5, width * (1 - age));
-        ctx.beginPath();
-        ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
-        ctx.lineTo(pts[i].x, pts[i].y);
-        ctx.stroke();
-      }
+    const n = pts.length;
+    const head = pts[n - 1];
+    // width profile: fat just behind the head, tapering to the tail
+    const widths = pts.map((p, i) => {
+      const age = (now - p.t) / 150;
+      const posFromHead = (n - 1 - i) / Math.max(1, n - 1);
+      const profile = posFromHead < 0.18 ? posFromHead / 0.18 : 1 - (posFromHead - 0.18) / 0.82;
+      return Math.max(0.5, 15 * profile * (1 - age * 0.6));
+    });
+    const left = [], right = [];
+    for (let i = 0; i < n; i++) {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+      let dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      dx /= len; dy /= len;
+      left.push({ x: pts[i].x - dy * widths[i], y: pts[i].y + dx * widths[i] });
+      right.push({ x: pts[i].x + dy * widths[i], y: pts[i].y - dx * widths[i] });
     }
-    // white core
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-    for (let i = 1; i < pts.length; i++) {
-      const age = (now - pts[i].t) / 130;
-      ctx.lineWidth = Math.max(0.4, 4.5 * (1 - age));
+    // pointed tip extending ahead of the finger
+    const prev = pts[n - 2];
+    let hx = head.x - prev.x, hy = head.y - prev.y;
+    const hlen = Math.hypot(hx, hy) || 1;
+    const tip = { x: head.x + (hx / hlen) * 18, y: head.y + (hy / hlen) * 18 };
+    const ribbon = () => {
       ctx.beginPath();
-      ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
-      ctx.lineTo(pts[i].x, pts[i].y);
-      ctx.stroke();
-    }
+      ctx.moveTo(left[0].x, left[0].y);
+      for (let i = 1; i < n; i++) ctx.lineTo(left[i].x, left[i].y);
+      ctx.lineTo(tip.x, tip.y);
+      for (let i = n - 1; i >= 0; i--) ctx.lineTo(right[i].x, right[i].y);
+      ctx.closePath();
+    };
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    // warm glow
+    ctx.shadowColor = 'rgba(255,190,70,.9)';
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = 'rgba(255,196,80,.45)';
+    ribbon(); ctx.fill();
+    // hot core
+    ctx.shadowBlur = 0;
+    const grad = ctx.createLinearGradient(pts[0].x, pts[0].y, tip.x, tip.y);
+    grad.addColorStop(0, 'rgba(255,214,120,.25)');
+    grad.addColorStop(0.7, 'rgba(255,240,200,.85)');
+    grad.addColorStop(1, 'rgba(255,255,245,1)');
+    ctx.fillStyle = grad;
+    ribbon(); ctx.fill();
     ctx.restore();
   }
+
+  // blade sparkles
+  for (let i = sparkles.length - 1; i >= 0; i--) {
+    const sp = sparkles[i];
+    sp.life -= dt;
+    if (sp.life <= 0) { sparkles.splice(i, 1); continue; }
+    const k = sp.life / sp.maxLife;
+    ctx.save();
+    ctx.globalAlpha = k;
+    ctx.translate(sp.x, sp.y);
+    ctx.rotate(sp.rot);
+    ctx.strokeStyle = '#fff2c8';
+    ctx.lineWidth = 1.6;
+    const r2 = sp.r * (0.6 + k * 0.4);
+    ctx.beginPath();
+    ctx.moveTo(-r2, 0); ctx.lineTo(r2, 0);
+    ctx.moveTo(0, -r2); ctx.lineTo(0, r2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+
+  // star confetti
+  for (let i = stars.length - 1; i >= 0; i--) {
+    const st = stars[i];
+    st.life -= dt;
+    if (st.life <= 0) { stars.splice(i, 1); continue; }
+    st.vy += 9 * dt;
+    st.x += st.vx; st.y += st.vy;
+    st.rot += st.vrot * dt;
+    ctx.globalAlpha = Math.min(1, st.life / st.maxLife + 0.2);
+    ctx.fillStyle = st.color;
+    drawStar(ctx, st.x, st.y, st.r, st.rot);
+  }
+  ctx.globalAlpha = 1;
 
   // droplets
   for (let i = droplets.length - 1; i >= 0; i--) {
@@ -1339,8 +1558,8 @@ function loop() {
 // ---------------------------------------------------------------------------
 loadFruits().then(() => {
   assetsReady = true;
-  loadingEl.textContent = "Tap the melon to start · Swipe to slice · Don't hit the bombs!";
-  spawnMenuMelon();
+  loadingEl.textContent = 'Pick a mode · Swipe to slice!';
+  spawnMenuFruits();
   loop();
   menuParade();
 }).catch((err) => {
@@ -1358,20 +1577,28 @@ function menuParade() {
   }, 1700);
 }
 
-startRing.addEventListener('click', startGame);
-startRing.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startGame(); }
-});
-restartBtn.addEventListener('click', startGame);
+for (const [ring, m] of [[classicRing, 'classic'], [arcadeRing, 'arcade']]) {
+  ring.addEventListener('click', () => startGame(m));
+  ring.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startGame(m); }
+  });
+}
+restartBtn.addEventListener('click', () => startGame(lastMode));
 pauseBtn.addEventListener('click', pauseGame);
 resumeBtn.addEventListener('click', resumeGame);
 quitBtn.addEventListener('click', quitToMenu);
+soundBtn.addEventListener('click', () => {
+  muted = !muted;
+  storage.set('fruitNinjaMuted', muted ? '1' : '0');
+  soundImg.src = muted ? UI.soundOff : UI.soundOn;
+});
 
 // Debug handle for automated tests.
 window.__FN = {
-  fruits, halves, toScreen, launchOne, trail, start: startGame,
+  fruits, halves, toScreen, launchOne, trail, start: (m) => startGame(m),
   get segs() { return sliceSegments.length; },
   get ready() { return assetsReady; },
   get state() { return state; }, get score() { return score; }, get lives() { return lives; },
-  get power() { return { freezeT, doubleT, activePower, frenzyQueue }; },
+  get mode() { return mode; }, get arcadeT() { return arcadeT; },
+  get power() { return { freezeT, doubleT, frenzyQueue }; },
 };
