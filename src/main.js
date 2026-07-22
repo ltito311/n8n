@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
+import { UI } from './ui-assets.js';
 
 // ---------------------------------------------------------------------------
 // Fruit Ninja — a 3D browser clone built on three.js.
@@ -136,6 +137,92 @@ function paintWood() {
 }
 paintWood();
 
+// Menu backdrop: sakura sky with misty mountain layers, painted once.
+const menuCanvas = document.createElement('canvas');
+menuCanvas.width = WOOD_W; menuCanvas.height = WOOD_H;
+const menuTexture = new THREE.CanvasTexture(menuCanvas);
+menuTexture.colorSpace = THREE.SRGBColorSpace;
+function paintSakuraScene() {
+  const ctx = menuCanvas.getContext('2d');
+  const W = WOOD_W, H = WOOD_H;
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#8fd4f2');
+  sky.addColorStop(0.45, '#c8e9f4');
+  sky.addColorStop(0.75, '#f4dde6');
+  sky.addColorStop(1, '#eec3d2');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+  // soft sun
+  const sun = ctx.createRadialGradient(W * 0.72, H * 0.24, 10, W * 0.72, H * 0.24, 190);
+  sun.addColorStop(0, 'rgba(255,246,214,.9)');
+  sun.addColorStop(1, 'rgba(255,246,214,0)');
+  ctx.fillStyle = sun;
+  ctx.fillRect(0, 0, W, H);
+  // mountain silhouettes, back to front
+  const layers = [
+    { base: H * 0.52, amp: 90, col: 'rgba(110,162,205,.55)' },
+    { base: H * 0.62, amp: 120, col: 'rgba(72,124,178,.7)' },
+    { base: H * 0.74, amp: 150, col: 'rgba(40,86,142,.85)' },
+  ];
+  for (const L of layers) {
+    ctx.fillStyle = L.col;
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    let y = L.base;
+    for (let x = 0; x <= W; x += 24) {
+      y = L.base - Math.abs(Math.sin(x * 0.011 + L.amp)) * L.amp - rand(0, 22);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // mist bands
+  for (let i = 0; i < 3; i++) {
+    const my = H * (0.5 + i * 0.13);
+    const mist = ctx.createLinearGradient(0, my - 40, 0, my + 40);
+    mist.addColorStop(0, 'rgba(240,246,250,0)');
+    mist.addColorStop(0.5, 'rgba(240,246,250,.5)');
+    mist.addColorStop(1, 'rgba(240,246,250,0)');
+    ctx.fillStyle = mist;
+    ctx.fillRect(0, my - 40, W, 80);
+  }
+  // soft sakura canopies in the top corners
+  for (const [cx, cy, n] of [[W * 0.02, H * 0.05, 60], [W * 0.99, H * 0.09, 52]]) {
+    for (let i = 0; i < n; i++) {
+      const a = rand(0, Math.PI * 2), d = rand(0, 170);
+      const r = rand(9, 26);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+      const hue = rand(335, 350);
+      g.addColorStop(0, `hsla(${hue}, 72%, 86%, ${rand(0.35, 0.6)})`);
+      g.addColorStop(1, `hsla(${hue}, 72%, 86%, 0)`);
+      ctx.save();
+      ctx.translate(cx + Math.cos(a) * d * 1.5, cy + Math.sin(a) * d * 0.7);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  // ground vignette so the parade fruit reads against it
+  const gv = ctx.createLinearGradient(0, H * 0.72, 0, H);
+  gv.addColorStop(0, 'rgba(46,26,36,0)');
+  gv.addColorStop(1, 'rgba(46,26,36,.55)');
+  ctx.fillStyle = gv;
+  ctx.fillRect(0, 0, W, H);
+  menuTexture.needsUpdate = true;
+}
+paintSakuraScene();
+
+function setWallScene(mode) {
+  wallScene = mode;
+  if (wallMesh) {
+    wallMesh.material.map = mode === 'menu' ? menuTexture : woodTexture;
+    wallMesh.material.needsUpdate = true;
+  }
+}
+
 // Fade the juice layer and re-composite while any splats are alive.
 function updateWall(dt) {
   const now = performance.now();
@@ -157,7 +244,7 @@ function updateWall(dt) {
   }
 }
 
-let wallMesh, wallHalfW = 1, wallHalfH = 1;
+let wallMesh, wallHalfW = 1, wallHalfH = 1, wallScene = 'menu';
 function buildWall() {
   const dist = CAMERA_Z - WALL_Z;
   wallHalfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * dist * 1.05;
@@ -165,7 +252,7 @@ function buildWall() {
   if (wallMesh) { wallMesh.geometry.dispose(); scene.remove(wallMesh); }
   wallMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(wallHalfW * 2, wallHalfH * 2),
-    new THREE.MeshBasicMaterial({ map: woodTexture })
+    new THREE.MeshBasicMaterial({ map: wallScene === 'menu' ? menuTexture : woodTexture })
   );
   wallMesh.position.z = WALL_Z;
   scene.add(wallMesh);
@@ -397,12 +484,24 @@ function makeBombMesh() {
 // ---------------------------------------------------------------------------
 // Game state
 // ---------------------------------------------------------------------------
-const fruits = [];  // live throwables: { mesh, vel, angVel, radius, def?, isBomb, missed }
+const fruits = [];  // live throwables: { mesh, vel, angVel, radius, def?, isBomb, power, missed }
 const halves = [];  // sliced halves: { mesh, vel, angVel, life }
 const droplets = []; // 2D juice particles
 const texts = [];    // floating score/combo text
+const petals = [];   // sakura petals on the fx canvas (menu only)
 let flash = 0;       // white screen flash alpha
 let shake = 0;       // camera shake amount
+
+// Power-up bananas (sliced to activate)
+const POWERS = {
+  freeze: { tint: 0x7fdcff, dur: 6, label: 'SLOW MOTION!', icon: UI.bananaFreeze },
+  frenzy: { tint: 0xd97fff, dur: 0, label: 'FRENZY!', icon: UI.bananaFrenzy },
+  double: { tint: 0xffd24a, dur: 8, label: 'DOUBLE POINTS!', icon: UI.bananaDouble },
+};
+let freezeT = 0, doubleT = 0;      // remaining effect time
+let activePower = null, activePowerT = 0, activePowerDur = 1;
+let frenzyQueue = 0, frenzyTimer = 0;
+let menuMelon = null;
 
 // localStorage throws in some sandboxed embeds — degrade to in-memory best.
 const storage = {
@@ -424,12 +523,31 @@ const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('hudBest');
 const livesEl = document.getElementById('lives');
 const startOverlay = document.getElementById('startOverlay');
-const startBtn = document.getElementById('startBtn');
+const startRing = document.getElementById('startRing');
+const loadingEl = document.getElementById('loading');
 const overOverlay = document.getElementById('gameOverOverlay');
 const finalScoreEl = document.getElementById('finalScore');
 const newBestEl = document.getElementById('newBest');
 const restartBtn = document.getElementById('restartBtn');
+const pauseOverlay = document.getElementById('pauseOverlay');
+const pauseBtn = document.getElementById('pauseBtn');
+const resumeBtn = document.getElementById('resumeBtn');
+const quitBtn = document.getElementById('quitBtn');
+const powerChip = document.getElementById('powerChip');
+const powerIcon = powerChip.querySelector('img');
+const powerBar = powerChip.querySelector('.bar i');
 bestEl.textContent = 'BEST ' + best;
+let assetsReady = false;
+
+// sprite-based UI chrome
+pauseBtn.innerHTML = `<img src="${UI.pause}" alt="" />`;
+pauseBtn.style.display = 'none';
+for (let i = 0; i < MAX_LIVES; i++) {
+  const img = document.createElement('img');
+  img.src = UI.xRed;
+  img.alt = 'life';
+  livesEl.appendChild(img);
+}
 
 function setScore(v) {
   score = v;
@@ -437,7 +555,11 @@ function setScore(v) {
 }
 function updateLivesUI() {
   const lost = MAX_LIVES - lives;
-  [...livesEl.children].forEach((el, i) => el.classList.toggle('lost', i >= MAX_LIVES - lost));
+  [...livesEl.children].forEach((el, i) => {
+    const isLost = i >= MAX_LIVES - lost;
+    el.classList.toggle('lost', isLost);
+    el.src = isLost ? UI.xGrey : UI.xRed;
+  });
 }
 
 function clearWorld() {
@@ -446,10 +568,35 @@ function clearWorld() {
   fruits.length = halves.length = droplets.length = texts.length = 0;
 }
 
+function spawnMenuMelon() {
+  const def = fruitDefs.find((d) => d.type === 'Watermelon') || fruitDefs[0];
+  if (!def || menuMelon) return;
+  menuMelon = new THREE.Mesh(def.geometry, sharedMaterial);
+  menuMelon.scale.setScalar(1.9);
+  menuMelon.position.set(0, 0, 2);
+  menuMelon.rotation.set(0.35, 0, -0.1);
+  scene.add(menuMelon);
+}
+function removeMenuMelon() {
+  if (menuMelon) { scene.remove(menuMelon); menuMelon = null; }
+}
+
+function resetPowers() {
+  freezeT = doubleT = 0;
+  frenzyQueue = 0;
+  activePower = null;
+  powerChip.classList.remove('on');
+}
+
 function startGame() {
+  if (!assetsReady) return;
   audioInit();
   clearWorld();
+  removeMenuMelon();
+  petals.length = 0;
+  resetPowers();
   paintWood(); // fresh, unstained wall
+  setWallScene('wood');
   setScore(0);
   lives = MAX_LIVES;
   updateLivesUI();
@@ -459,11 +606,42 @@ function startGame() {
   state = 'playing';
   startOverlay.classList.add('hidden');
   overOverlay.classList.add('hidden');
+  pauseOverlay.classList.add('hidden');
   hud.classList.add('visible');
+  pauseBtn.style.display = 'block';
+}
+
+function pauseGame() {
+  if (state !== 'playing' || userPaused) return;
+  userPaused = true;
+  pauseOverlay.classList.remove('hidden');
+  pauseBtn.style.display = 'none';
+}
+function resumeGame() {
+  if (!userPaused) return;
+  userPaused = false;
+  clock.getDelta(); // swallow the pause gap
+  pauseOverlay.classList.add('hidden');
+  pauseBtn.style.display = 'block';
+}
+function quitToMenu() {
+  userPaused = false;
+  state = 'menu';
+  clearWorld();
+  resetPowers();
+  setWallScene('menu');
+  spawnMenuMelon();
+  pauseOverlay.classList.add('hidden');
+  overOverlay.classList.add('hidden');
+  hud.classList.remove('visible');
+  pauseBtn.style.display = 'none';
+  startOverlay.classList.remove('hidden');
 }
 
 function gameOver(byBomb) {
   state = 'over';
+  resetPowers();
+  pauseBtn.style.display = 'none';
   if (byBomb) { flash = 1; shake = 1; playBomb(); }
   if (score > best) {
     best = score;
@@ -483,8 +661,9 @@ function gameOver(byBomb) {
 // ---------------------------------------------------------------------------
 // Spawning
 // ---------------------------------------------------------------------------
-function launchOne(isBomb) {
-  const def = pick(fruitDefs);
+function launchOne(isBomb, power = null) {
+  let def = pick(fruitDefs);
+  if (power) def = fruitDefs.find((d) => d.type === 'Banana') || def;
   let mesh, radius;
   if (isBomb) {
     mesh = makeBombMesh();
@@ -494,6 +673,15 @@ function launchOne(isBomb) {
     radius = def.radius * FRUIT_SCALE;
     mesh = new THREE.Mesh(def.geometry, sharedMaterial);
     mesh.scale.setScalar(radius);
+    if (power) {
+      // additive glow shell so the power banana reads as special
+      const glow = new THREE.Mesh(def.geometry, new THREE.MeshBasicMaterial({
+        color: POWERS[power].tint, transparent: true, opacity: 0.45,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      }));
+      glow.scale.setScalar(1.22);
+      mesh.add(glow);
+    }
   }
   const x = rand(-halfW * 0.7, halfW * 0.7);
   const z = rand(FRUIT_Z_FAR, FRUIT_Z_NEAR);
@@ -504,7 +692,7 @@ function launchOne(isBomb) {
   const vel = new THREE.Vector3(-x * rand(0.06, 0.16) + rand(-1.2, 1.2), vy, 0);
   const angVel = new THREE.Vector3(rand(-2.5, 2.5), rand(-2.5, 2.5), rand(-2.5, 2.5));
   scene.add(mesh);
-  fruits.push({ mesh, vel, angVel, radius, def: isBomb ? null : def, isBomb, missed: false });
+  fruits.push({ mesh, vel, angVel, radius, def: isBomb ? null : def, isBomb, power, missed: false });
   playThrow();
 }
 
@@ -512,6 +700,11 @@ function spawnWave() {
   const difficulty = Math.min(1, elapsed / 75); // ramps over ~75s
   const n = 1 + Math.floor(rand(0, 2.2 + difficulty * 2.6));
   const bombChance = score < 4 ? 0 : 0.10 + difficulty * 0.16;
+  // rare power-up banana, once things are rolling and no effect is active
+  if (score >= 8 && !activePower && Math.random() < 0.09) {
+    const type = pick(Object.keys(POWERS));
+    setTimeout(() => { if (state === 'playing') launchOne(false, type); }, rand(60, 400));
+  }
   for (let i = 0; i < n; i++) {
     const isBomb = Math.random() < bombChance;
     setTimeout(() => { if (state === 'playing') launchOne(isBomb); }, i * rand(90, 260));
@@ -619,16 +812,19 @@ function sliceFruit(f, seg) {
   splatWall(center, f.def.juice, f.radius);
   playSplat();
 
-  // Scoring: occasional critical hit.
+  if (f.power) activatePower(f.power, s);
+
+  // Scoring: occasional critical hit, doubled while the gold banana is live.
   const critical = Math.random() < 0.07;
-  const points = critical ? 10 : 1;
+  const mult = doubleT > 0 ? 2 : 1;
+  const points = (critical ? 10 : 1) * mult;
   setScore(score + points);
   texts.push({
-    str: critical ? 'CRITICAL +10' : '+1',
+    str: critical ? `CRITICAL +${points}` : `+${points}`,
     x: s.x, y: s.y, vy: -0.05,
     life: critical ? 1.4 : 0.8,
     size: critical ? 30 : 20,
-    color: critical ? '#7dff6a' : '#ffe9b0',
+    color: critical ? '#7dff6a' : mult > 1 ? '#ffd23f' : '#ffe9b0',
   });
 
   // combo bookkeeping
@@ -637,9 +833,23 @@ function sliceFruit(f, seg) {
   comboPos = s;
 }
 
+function activatePower(type, s) {
+  const P = POWERS[type];
+  texts.push({ str: P.label, x: s.x, y: s.y - 20, vy: -0.04, life: 1.6, size: 34, color: '#' + P.tint.toString(16).padStart(6, '0') });
+  playSwoosh();
+  if (type === 'freeze') freezeT = P.dur;
+  if (type === 'double') doubleT = P.dur;
+  if (type === 'frenzy') { frenzyQueue = 9; frenzyTimer = 0.1; }
+  if (P.dur > 0) {
+    activePower = type; activePowerT = P.dur; activePowerDur = P.dur;
+    powerIcon.src = P.icon;
+    powerChip.classList.add('on');
+  }
+}
+
 function resolveCombo() {
   if (comboCount >= 3) {
-    const bonus = comboCount;
+    const bonus = comboCount * (doubleT > 0 ? 2 : 1);
     setScore(score + bonus);
     texts.push({
       str: `${comboCount} FRUIT COMBO! +${bonus}`,
@@ -674,10 +884,40 @@ function spawnDroplets(x, y, color, n) {
 const clock = new THREE.Clock();
 
 function update(dt) {
-  elapsed += dt;
+  // Freeze banana: slow the simulation, not the blade or UI.
+  const simDt = dt * (freezeT > 0 ? 0.45 : 1);
+  elapsed += simDt;
+
+  if (freezeT > 0) freezeT = Math.max(0, freezeT - dt);
+  if (doubleT > 0) doubleT = Math.max(0, doubleT - dt);
+  if (activePower) {
+    activePowerT -= dt;
+    powerBar.style.width = Math.max(0, (activePowerT / activePowerDur) * 100) + '%';
+    if (activePowerT <= 0) { activePower = null; powerChip.classList.remove('on'); }
+  }
+  if (frenzyQueue > 0 && state === 'playing') {
+    frenzyTimer -= dt;
+    if (frenzyTimer <= 0) { launchOne(false); frenzyQueue--; frenzyTimer = rand(0.12, 0.3); }
+  }
+  if (menuMelon) {
+    menuMelon.rotation.y += dt * 0.9;
+    // pin the melon to the center of the start ring, whatever the layout
+    const r = startRing.getBoundingClientRect();
+    if (r.width) {
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const dist = CAMERA_Z - menuMelon.position.z;
+      const th = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * dist;
+      menuMelon.position.x = ((cx / innerWidth) * 2 - 1) * th * camera.aspect;
+      menuMelon.position.y = (1 - (cy / innerHeight) * 2) * th;
+      // size the melon to the ring's inner hole
+      const px = r.width * 0.5 * 0.55; // hole radius in css px
+      const world = (px / (innerHeight / 2)) * th;
+      menuMelon.scale.setScalar(Math.max(0.8, world));
+    }
+  }
 
   if (state === 'playing') {
-    spawnTimer -= dt;
+    spawnTimer -= simDt;
     if (spawnTimer <= 0) spawnWave();
 
     if (comboCount > 0) {
@@ -705,11 +945,11 @@ function update(dt) {
   // physics: whole fruit
   for (let i = fruits.length - 1; i >= 0; i--) {
     const f = fruits[i];
-    f.vel.y += GRAVITY * dt;
-    f.mesh.position.addScaledVector(f.vel, dt);
-    f.mesh.rotation.x += f.angVel.x * dt;
-    f.mesh.rotation.y += f.angVel.y * dt;
-    f.mesh.rotation.z += f.angVel.z * dt;
+    f.vel.y += GRAVITY * simDt;
+    f.mesh.position.addScaledVector(f.vel, simDt);
+    f.mesh.rotation.x += f.angVel.x * simDt;
+    f.mesh.rotation.y += f.angVel.y * simDt;
+    f.mesh.rotation.z += f.angVel.z * simDt;
     if (f.isBomb) {
       const spark = f.mesh.userData.spark;
       if (spark) spark.intensity = 4 + Math.sin(elapsed * 30 + i) * 3;
@@ -717,7 +957,7 @@ function update(dt) {
     if (f.vel.y < 0 && f.mesh.position.y < -halfH - 2) {
       fruits.splice(i, 1);
       scene.remove(f.mesh);
-      if (!f.isBomb && state === 'playing') {
+      if (!f.isBomb && !f.power && state === 'playing') {
         lives--;
         updateLivesUI();
         playMiss();
@@ -729,11 +969,11 @@ function update(dt) {
   // physics: halves
   for (let i = halves.length - 1; i >= 0; i--) {
     const h = halves[i];
-    h.vel.y += GRAVITY * dt;
-    h.mesh.position.addScaledVector(h.vel, dt);
-    h.mesh.rotateOnWorldAxis(h.n, h.spin * dt);
+    h.vel.y += GRAVITY * simDt;
+    h.mesh.position.addScaledVector(h.vel, simDt);
+    h.mesh.rotateOnWorldAxis(h.n, h.spin * simDt);
     h.plane.constant = -h.n.dot(h.mesh.position); // keep cut anchored to the half
-    h.life -= dt;
+    h.life -= simDt;
     if (h.life < 0.5) h.mesh.material.opacity = h.life / 0.5;
     if (h.life <= 0 || h.mesh.position.y < -halfH - 3) {
       scene.remove(h.mesh);
@@ -759,6 +999,37 @@ function update(dt) {
 function drawFX(dt) {
   const ctx = fxCtx;
   ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+  // sakura petals drifting over the menu
+  if (state !== 'playing') {
+    while (petals.length < 26) {
+      petals.push({
+        x: rand(-40, innerWidth), y: rand(-innerHeight, -10),
+        vx: rand(8, 30), vy: rand(24, 60),
+        r: rand(3.5, 7), rot: rand(0, 6.28), vrot: rand(-1.5, 1.5),
+        sway: rand(0.5, 1.6), phase: rand(0, 6.28),
+        hue: rand(332, 350),
+      });
+    }
+    for (let i = petals.length - 1; i >= 0; i--) {
+      const p = petals[i];
+      p.phase += dt * p.sway;
+      p.x += (p.vx + Math.sin(p.phase * 2) * 22) * dt;
+      p.y += p.vy * dt;
+      p.rot += p.vrot * dt;
+      if (p.y > innerHeight + 12 || p.x > innerWidth + 40) { petals.splice(i, 1); continue; }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot + Math.sin(p.phase) * 0.6);
+      ctx.fillStyle = `hsla(${p.hue}, 78%, 84%, .9)`;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, p.r, p.r * 0.62, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  } else if (petals.length) {
+    petals.length = 0;
+  }
 
   // blade trail: tapered ribbon through recent points
   const now = performance.now();
@@ -838,10 +1109,11 @@ function drawFX(dt) {
   }
 }
 
-let paused = false;
+let paused = false, userPaused = false;
 document.addEventListener('visibilitychange', () => {
   paused = document.hidden;
   if (!paused) clock.getDelta(); // swallow the pause gap
+  else if (state === 'playing') pauseGame(); // don't lose a run in a hidden tab
 });
 
 function loop() {
@@ -850,7 +1122,7 @@ function loop() {
   if (innerWidth !== lastW || innerHeight !== lastH) resize();
   if (!lastW || !lastH) return;
   const dt = Math.min(clock.getDelta(), 0.05);
-  if (!paused) {
+  if (!paused && !userPaused) {
     update(dt);
     renderer.render(scene, camera);
     drawFX(dt);
@@ -860,15 +1132,14 @@ function loop() {
 // ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
-startBtn.disabled = true;
 loadFruits().then(() => {
-  startBtn.disabled = false;
-  startBtn.innerHTML = 'START';
-  // menu garnish: a slow parade of fruit behind the title
+  assetsReady = true;
+  loadingEl.textContent = "Tap the melon to start · Swipe to slice · Don't hit the bombs!";
+  spawnMenuMelon();
   loop();
   menuParade();
 }).catch((err) => {
-  document.getElementById('loading').textContent = 'Failed to load fruit models :(';
+  loadingEl.textContent = 'Failed to load fruit models :(';
   console.error(err);
 });
 
@@ -877,17 +1148,25 @@ function menuParade() {
   if (paradeTimer) return;
   paradeTimer = setInterval(() => {
     if (state === 'menu' || state === 'over') {
-      if (fruits.length < 4 && fruitDefs.length) launchOne(false);
+      if (fruits.length < 3 && fruitDefs.length) launchOne(false);
     }
-  }, 1400);
+  }, 1700);
 }
 
-startBtn.addEventListener('click', startGame);
+startRing.addEventListener('click', startGame);
+startRing.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startGame(); }
+});
 restartBtn.addEventListener('click', startGame);
+pauseBtn.addEventListener('click', pauseGame);
+resumeBtn.addEventListener('click', resumeGame);
+quitBtn.addEventListener('click', quitToMenu);
 
 // Debug handle for automated tests.
 window.__FN = {
-  fruits, halves, toScreen, launchOne, trail,
+  fruits, halves, toScreen, launchOne, trail, start: startGame,
   get segs() { return sliceSegments.length; },
+  get ready() { return assetsReady; },
   get state() { return state; }, get score() { return score; }, get lives() { return lives; },
+  get power() { return { freezeT, doubleT, activePower, frenzyQueue }; },
 };
