@@ -63,7 +63,9 @@ async function process_(vid) {
 			db.update(vid, { ai: { ...v.ai, status: 'transcribing' } });
 			try {
 				const segs = await transcribeFile(path.join(mediaDir, v.file), v.mime);
-				if (segs?.length) db.update(vid, { transcript: segs, transcriptSource: 'whisper' });
+				const words = (a = []) => a.map((x) => x.text).join(' ').split(/\s+/).filter(Boolean).length;
+				// Keep the live-caption transcript if Whisper heard far less (likely silence/noise).
+				if (segs?.length && words(segs) >= words(v.transcript) * 0.5) db.update(vid, { transcript: segs, transcriptSource: 'whisper' });
 			} catch (e) {
 				console.error('[transcribe]', e.message, '— keeping browser transcript');
 			}

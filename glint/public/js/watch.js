@@ -51,10 +51,13 @@ const seek = (t, play = false) => {
 	if (play) video.play();
 };
 const tsLink = (t) => `<span class="tlink" data-t="${t}">${fmt(t)}</span>`;
-const linkify = (text) => esc(text).replace(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g, (m, a, b, c) => {
-	const t = c ? +a * 3600 + +b * 60 + +c : +a * 60 + +b;
-	return `<span class="tlink" data-t="${t}">${m.slice(1, -1)}</span>`;
-});
+const linkify = (text) =>
+	esc(text)
+		.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+		.replace(/[\[【(](\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*[–-]\s*\d{1,2}:\d{2})?[\]】)]/g, (m, a, b, c) => {
+			const t = c ? +a * 3600 + +b * 60 + +c : +a * 60 + +b;
+			return `<span class="tlink" data-t="${t}">${fmt(t)}</span>`;
+		});
 document.addEventListener('click', (e) => {
 	const l = e.target.closest('[data-t]');
 	if (l && !l.closest('#scrub')) seek(Number(l.dataset.t), true);

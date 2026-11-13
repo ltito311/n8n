@@ -6,7 +6,7 @@ const GROQ_URL = () => env('GROQ_BASE_URL', 'https://api.groq.com/openai/v1');
 
 export const aiConfig = () => ({
 	enabled: Boolean(env('GROQ_API_KEY')),
-	model: env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+	model: env('GROQ_MODEL', 'openai/gpt-oss-120b'),
 	transcription: env('GROQ_TRANSCRIBE', 'on') !== 'off' && Boolean(env('GROQ_API_KEY')),
 });
 
@@ -28,7 +28,8 @@ async function chat(messages, { json = false, temperature = 0.3, maxTokens = 150
 			model: aiConfig().model,
 			messages,
 			temperature,
-			max_tokens: maxTokens,
+			max_tokens: maxTokens + 1500,
+			...(/gpt-oss/.test(aiConfig().model) ? { reasoning_effort: 'low' } : {}),
 			...(json ? { response_format: { type: 'json_object' } } : {}),
 		}),
 	});
@@ -85,7 +86,7 @@ export async function ask(video, question, history = []) {
 		[
 			{
 				role: 'system',
-				content: `You answer questions about a recorded video using only its transcript. Cite timestamps like [1:23] when relevant. Be concise. If the transcript doesn't contain the answer, say so.\n\nTitle: ${video.title}\nTranscript:\n"""\n${transcriptText(video.transcript) || '(empty)'}\n"""`,
+				content: `You answer questions about a recorded video using only its transcript. Cite timestamps in square brackets exactly like [1:23] when relevant. Plain text, no markdown tables. Be concise. If the transcript doesn't contain the answer, say so.\n\nTitle: ${video.title}\nTranscript:\n"""\n${transcriptText(video.transcript) || '(empty)'}\n"""`,
 			},
 			...history.slice(-8).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content) })),
 			{ role: 'user', content: question },
@@ -138,7 +139,11 @@ export async function transcribeFile(filePath, mime) {
 	if (!res.ok) throw new Error(`Transcription ${res.status}: ${(await res.text()).slice(0, 300)}`);
 	const data = await res.json();
 	if (Array.isArray(data.segments)) {
-		return data.segments.map((s) => ({ start: s.start, end: s.end, text: String(s.text).trim() })).filter((s) => s.text);
+		// Drop silence/noise segments Whisper tends to hallucinate ("Thank you.", ".", etc.)
+		return data.segments
+			.filter((s) => !(s.no_speech_prob > 0.5) && !(s.avg_logprob < -1) && /[\p{L}\p{N}]/u.test(s.text || ''))
+			.map((s) => ({ start: s.start, end: s.end, text: String(s.text).trim() }))
+			.filter((s) => s.text);
 	}
 	return data.text ? [{ start: 0, end: 0, text: data.text.trim() }] : [];
 }
