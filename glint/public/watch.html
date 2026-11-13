@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Glint</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="/css/app.css" />
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b5cff'/%3E%3Cstop offset='1' stop-color='%23ff4fa3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Ccircle cx='16' cy='16' r='5' fill='white'/%3E%3C/svg%3E" />
+</head>
+<body>
+	<div id="top"></div>
+	<main class="watch">
+		<section>
+			<div class="player" id="player">
+				<video id="video" playsinline preload="metadata"></video>
+				<div class="caption-overlay" id="capOverlay"></div>
+				<div class="floaters" id="floaters"></div>
+				<div class="big-play" id="bigPlay"><span></span></div>
+				<div class="controls">
+					<div class="scrub" id="scrub">
+						<div class="track"><div class="buf" id="buf"></div><div class="fill" id="fill"></div><div id="marks"></div></div>
+						<div class="knob" id="knob"></div>
+						<div class="tip" id="tip"></div>
+					</div>
+					<div class="ctrl-row">
+						<button class="btn btn-icon" id="playBtn"></button>
+						<button class="btn btn-icon" id="backBtn" title="Back 5s (←)"></button>
+						<button class="btn btn-icon" id="fwdBtn" title="Forward 5s (→)"></button>
+						<button class="btn btn-icon" id="muteBtn"></button>
+						<input type="range" class="vol" id="vol" min="0" max="1" step="0.01" value="1" />
+						<span class="time" id="timeLbl">0:00 / 0:00</span>
+						<span class="faint" id="chapLbl" style="font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></span>
+						<div class="spacer"></div>
+						<button class="btn btn-icon" id="ccBtn" title="Captions (c)"></button>
+						<div class="speed-menu" id="speedMenu">
+							<button class="btn btn-sm" id="speedBtn" style="font-family:var(--mono);height:38px">1×</button>
+							<div class="pop" id="speedPop"></div>
+						</div>
+						<button class="btn btn-icon" id="pipBtn" title="Picture in picture"></button>
+						<button class="btn btn-icon" id="fsBtn" title="Fullscreen (f)"></button>
+					</div>
+				</div>
+			</div>
+			<div class="vhead">
+				<h1 class="vtitle" id="title" contenteditable="plaintext-only" spellcheck="false"></h1>
+				<div class="vmeta" id="meta"></div>
+				<div class="vactions">
+					<button class="btn btn-primary" id="copyBtn"></button>
+					<button class="btn" id="msgBtn"></button>
+					<button class="btn" id="trimBtn"></button>
+					<a class="btn" id="dlBtn" download></a>
+					<button class="btn" id="regenBtn"></button>
+					<div class="spacer"></div>
+					<div class="reactbar" id="reacts"></div>
+					<button class="btn btn-icon btn-danger" id="delBtn" title="Delete"></button>
+				</div>
+			</div>
+		</section>
+		<aside class="side">
+			<nav class="tabs" id="tabs">
+				<button data-tab="summary" class="on"></button>
+				<button data-tab="transcript"></button>
+				<button data-tab="comments"></button>
+				<button data-tab="ask"></button>
+			</nav>
+			<div class="tabpane on" data-pane="summary" id="paneSummary"></div>
+			<div class="tabpane" data-pane="transcript" id="paneTranscript"></div>
+			<div class="tabpane chat" data-pane="comments">
+				<div class="msgs" id="commentList" style="gap:0"></div>
+				<div class="composer">
+					<textarea class="input" id="commentText" rows="2" placeholder="Add a comment…" style="width:100%"></textarea>
+					<div class="row">
+						<label><input type="checkbox" id="commentAtTime" checked /> at <span class="mono" id="commentTime">0:00</span></label>
+						<button class="btn btn-primary btn-sm" id="commentSend">Post</button>
+					</div>
+				</div>
+			</div>
+			<div class="tabpane chat" data-pane="ask">
+				<div class="msgs" id="askList"></div>
+				<form class="chat-input" id="askForm">
+					<input class="input" id="askText" placeholder="Ask anything about this video…" autocomplete="off" />
+					<button class="btn btn-primary btn-icon" id="askSend"></button>
+				</form>
+			</div>
+		</aside>
+	</main>
+
+	<div class="modal" id="msgModal">
+		<div class="modal-card">
+			<h3>Share message</h3>
+			<p class="muted" style="margin:0 0 14px">Grok drafts it from the video. Edit, then copy.</p>
+			<div class="chips" id="msgKind" style="margin-bottom:12px"><button class="chip on" data-v="chat">Slack / Teams</button><button class="chip" data-v="email">Email</button></div>
+			<textarea class="input" id="msgText" rows="9" style="width:100%"></textarea>
+			<div class="row end"><button class="btn btn-ghost" data-close>Close</button><button class="btn" id="msgRegen"></button><button class="btn btn-primary" id="msgCopy">Copy</button></div>
+		</div>
+	</div>
+
+	<div class="modal" id="trimModal">
+		<div class="modal-card">
+			<h3>Trim</h3>
+			<p class="muted" style="margin:0 0 16px">Viewers only see the part between start and end. Nothing is deleted.</p>
+			<div class="row" style="gap:14px">
+				<div class="field" style="flex:1"><label>Start</label><div class="row"><input class="input mono" id="trimStart" style="flex:1" /><button class="btn btn-sm" id="trimStartNow">Now</button></div></div>
+				<div class="field" style="flex:1"><label>End</label><div class="row"><input class="input mono" id="trimEnd" style="flex:1" /><button class="btn btn-sm" id="trimEndNow">Now</button></div></div>
+			</div>
+			<div class="row end"><button class="btn btn-ghost" id="trimReset">Reset</button><button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" id="trimSave">Save trim</button></div>
+		</div>
+	</div>
+
+	<div class="modal" id="nameModal">
+		<div class="modal-card" style="width:min(400px,100%)">
+			<h3>What should we call you?</h3>
+			<p class="muted" style="margin:0 0 14px">Shown next to your comments.</p>
+			<input class="input" id="nameInput" style="width:100%" maxlength="40" placeholder="Your name" />
+			<div class="row end"><button class="btn btn-primary" id="nameSave">Continue</button></div>
+		</div>
+	</div>
+	<script type="module" src="/js/watch.js"></script>
+</body>
+</html>

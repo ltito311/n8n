@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Glint — Record</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="/css/app.css" />
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff4fa3'/%3E%3Ccircle cx='16' cy='16' r='6' fill='white'/%3E%3C/svg%3E" />
+</head>
+<body>
+	<div id="top"></div>
+	<main class="rec-layout">
+		<aside>
+			<div class="panel">
+				<h3>Capture</h3>
+				<div class="seg" id="modes">
+					<button data-mode="screen-cam"></button>
+					<button data-mode="screen"></button>
+					<button data-mode="cam"></button>
+				</div>
+			</div>
+			<div class="panel">
+				<h3>Devices</h3>
+				<div class="field" id="camField">
+					<label>Camera</label>
+					<select class="input" id="camSel"></select>
+				</div>
+				<div class="field">
+					<label>Microphone</label>
+					<select class="input" id="micSel"></select>
+					<div class="meter" style="margin-top:6px"><i id="level"></i></div>
+				</div>
+				<div id="bubbleOpts">
+					<div class="field">
+						<label>Camera bubble</label>
+						<div class="row" style="justify-content:space-between">
+							<div class="chips" id="corner">
+								<button class="chip" data-v="tl">↖</button><button class="chip" data-v="tr">↗</button><button class="chip" data-v="bl">↙</button><button class="chip" data-v="br">↘</button>
+							</div>
+							<div class="chips" id="size">
+								<button class="chip" data-v="s">S</button><button class="chip" data-v="m">M</button><button class="chip" data-v="l">L</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="field">
+					<label>Quality</label>
+					<div class="chips" id="quality"><button class="chip" data-v="720">720p</button><button class="chip" data-v="1080">1080p</button><button class="chip" data-v="1440">1440p</button></div>
+				</div>
+			</div>
+			<div class="panel">
+				<h3>Options</h3>
+				<div class="toggle" id="sysAudioRow">System / tab audio <label class="switch"><input type="checkbox" id="optSys" /><span></span></label></div>
+				<div class="toggle">Live captions → transcript <label class="switch"><input type="checkbox" id="optCaps" /><span></span></label></div>
+				<div class="toggle">3-second countdown <label class="switch"><input type="checkbox" id="optCount" /><span></span></label></div>
+				<div class="toggle">Mirror camera <label class="switch"><input type="checkbox" id="optMirror" /><span></span></label></div>
+				<div class="toggle">Floating controls window <label class="switch"><input type="checkbox" id="optPip" /><span></span></label></div>
+			</div>
+			<div class="rec-side-bottom">
+				<button class="btn btn-primary btn-lg" id="startBtn"><span class="rec-dot" style="animation:none;background:#fff"></span> Start recording</button>
+				<p class="hint"><span class="kbd">Alt</span>+<span class="kbd">P</span> pause · <span class="kbd">Alt</span>+<span class="kbd">S</span> stop · <span class="kbd">Alt</span>+<span class="kbd">C</span> toggle camera</p>
+			</div>
+		</aside>
+		<section>
+			<div class="stage" id="stage">
+				<canvas id="canvas" width="1280" height="720"></canvas>
+				<div class="countdown" id="countdown"></div>
+				<div class="live-caps" id="caps"></div>
+				<div class="rec-bar" id="recBar">
+					<div class="rec-time"><span class="rec-dot"></span><span id="time">0:00</span></div>
+					<button class="btn btn-icon btn-ghost" id="pauseBtn" title="Pause (Alt+P)"></button>
+					<button class="btn btn-icon btn-ghost" id="camToggle" title="Hide camera (Alt+C)"></button>
+					<button class="btn btn-icon btn-ghost" id="restartBtn" title="Restart"></button>
+					<button class="btn btn-icon btn-ghost btn-danger" id="cancelBtn" title="Discard"></button>
+					<button class="stop-btn" id="stopBtn" title="Stop & share (Alt+S)"><i></i></button>
+				</div>
+			</div>
+		</section>
+	</main>
+	<div class="upload-overlay" id="uploading">
+		<div class="upload-card">
+			<div class="orb" style="width:64px;height:64px"></div>
+			<h2 style="margin:18px 0 4px;letter-spacing:-0.02em">Making it shareable</h2>
+			<p class="muted" id="upMsg" style="margin:0">Uploading…</p>
+			<div class="progress"><i id="upBar"></i></div>
+			<p class="faint mono" id="upStat"></p>
+		</div>
+	</div>
+	<script type="module" src="/js/record.js"></script>
+</body>
+</html>
