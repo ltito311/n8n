@@ -112,23 +112,27 @@ export async function draftMessage(video, kind, link) {
 	);
 }
 
-// Pull a small mono audio track out of the video so uploads stay well under Groq's file limit.
-const extractAudio = (filePath) =>
+// Pull a small mono audio track out of a local video (ffmpeg) so uploads stay under Groq's file limit.
+export const extractAudio = (filePath) =>
 	new Promise((resolve) => {
 		const out = filePath.replace(/\.\w+$/, '.audio.ogg');
-		execFile('ffmpeg', ['-y', '-loglevel', 'error', '-i', filePath, '-vn', '-ac', '1', '-ar', '16000', '-c:a', 'libopus', '-b:a', '24k', out], (err) =>
-			resolve(err ? null : out),
-		);
+		execFile('ffmpeg', ['-y', '-loglevel', 'error', '-i', filePath, '-vn', '-ac', '1', '-ar', '16000', '-c:a', 'libopus', '-b:a', '24k', out], (err) => {
+			if (err) return resolve(null);
+			const buf = fs.readFileSync(out);
+			fs.rmSync(out, { force: true });
+			resolve(buf);
+		});
 	});
 
-export async function transcribeFile(filePath, mime) {
+const extFor = (type = '') => (type.includes('ogg') ? 'ogg' : type.includes('mp4') ? (type.startsWith('audio') ? 'm4a' : 'mp4') : 'webm');
+
+// source: { buf: Buffer|ArrayBuffer, type: mime }
+export async function transcribe(source) {
 	const key = env('GROQ_API_KEY');
-	if (!key) return null;
-	const audio = await extractAudio(filePath);
+	if (!key || !source?.buf) return null;
+	const type = (source.type || 'audio/webm').split(';')[0];
 	const form = new FormData();
-	if (audio) form.append('file', new Blob([fs.readFileSync(audio)], { type: 'audio/ogg' }), 'audio.ogg');
-	else form.append('file', new Blob([fs.readFileSync(filePath)], { type: mime || 'video/webm' }), `audio.${(mime || '').includes('mp4') ? 'mp4' : 'webm'}`);
-	if (audio) fs.rmSync(audio, { force: true });
+	form.append('file', new Blob([source.buf], { type }), `audio.${extFor(type)}`);
 	form.append('model', env('GROQ_TRANSCRIBE_MODEL', 'whisper-large-v3-turbo'));
 	form.append('response_format', 'verbose_json');
 	const res = await fetch(`${GROQ_URL()}/audio/transcriptions`, {

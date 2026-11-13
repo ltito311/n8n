@@ -1,4 +1,4 @@
-import { $, api, fmt, ago, esc, icons, toast, topbar, store } from './common.js';
+import { $, api, fmt, ago, esc, icons, toast, topbar, store, requireOwner } from './common.js';
 
 $('#top').innerHTML = topbar(`<a class="btn btn-primary" href="/record">${icons.plus} New recording</a>`);
 $('#search').innerHTML = `${icons.search}<input class="input" id="q" placeholder="Search titles, summaries, transcripts…" />`;
@@ -95,6 +95,7 @@ document.addEventListener('keydown', (e) => {
 	}
 });
 
+await requireOwner();
 load();
 // refresh while AI is still working on something
 setInterval(() => {

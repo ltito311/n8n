@@ -17,4 +17,7 @@ npm start              # http://localhost:4747
 - **Collaboration**: timestamped comments, emoji reactions, view counts, copy link, download, non-destructive trim, inline title editing.
 - **Library**: full-text search across titles, summaries and transcripts, plus sorting and stats.
 
-If ffmpeg is installed, uploads are remuxed so WebM files seek properly. Data lives in `glint/data/`.
+Set `APP_PASSWORD` to lock recording, the library and editing behind a password (viewers with a link can still watch, comment and react).
+
+**Local**: data lives in `glint/data/`; ffmpeg (optional) fixes WebM seeking.
+**Vercel**: deploys as-is (`vercel.json`). Connect a Blob store (adds `BLOB_READ_WRITE_TOKEN`) and set `GROQ_API_KEY` + `APP_PASSWORD`.

@@ -1,4 +1,4 @@
-import { $, $$, api, fmt, ago, esc, icons, toast, topbar, store, avatar, bytes } from './common.js';
+import { $, $$, api, fmt, ago, esc, icons, toast, topbar, store, avatar, bytes, me } from './common.js';
 
 const vid = location.pathname.split('/').pop();
 $('#top').innerHTML = topbar(`<a class="btn btn-ghost" href="/">Library</a><a class="btn btn-primary" href="/record">${icons.plus} New</a>`);
@@ -8,6 +8,7 @@ const player = $('#player');
 let V = null;
 let cfg = {};
 let captionsOn = store.get('cc', false);
+let isOwner = false;
 let txFilter = '';
 const askHistory = [];
 
@@ -286,7 +287,7 @@ function renderSummary() {
 							? 'No speech was captured, so there is nothing to summarize.'
 							: 'Not generated yet.'
 			}</p>
-			${cfg.ai && V.transcript?.length ? `<button class="btn btn-sm" style="margin-top:12px" data-regen>${icons.refresh} Generate</button>` : ''}</div>`;
+			${isOwner && cfg.ai && V.transcript?.length ? `<button class="btn btn-sm" style="margin-top:12px" data-regen>${icons.refresh} Generate</button>` : ''}</div>`;
 		return;
 	}
 	const done = store.get(`todo:${vid}`, {});
@@ -346,7 +347,7 @@ function renderComments() {
 				.map(
 					(c) => `<div class="comment">${avatar(c.author)}<div style="flex:1;min-width:0">
 				<div><span class="who">${esc(c.author)}</span><span class="when">${ago(c.at)}</span>
-				${c.author === store.get('name') ? `<button class="btn btn-ghost btn-sm btn-icon" style="float:right;height:22px;width:22px" data-delc="${c.id}" title="Delete">${icons.x}</button>` : ''}</div>
+				${isOwner ? `<button class="btn btn-ghost btn-sm btn-icon" style="float:right;height:22px;width:22px" data-delc="${c.id}" title="Delete">${icons.x}</button>` : ''}</div>
 				<p>${c.t != null ? tsLink(c.t) : ''}${esc(c.text)}</p></div></div>`,
 				)
 				.join('')
@@ -577,10 +578,17 @@ function poll() {
 
 (async () => {
 	try {
-		[V, cfg] = await Promise.all([api(`/videos/${vid}`), api('/config')]);
+		let m;
+		[V, cfg, m] = await Promise.all([api(`/videos/${vid}`), api('/config'), me()]);
+		isOwner = m.owner;
 	} catch {
 		document.querySelector('main').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="orb"></div><h2>Video not found</h2><p>It may have been deleted.</p><a class="btn btn-primary" href="/">Back to library</a></div>`;
 		return;
+	}
+	if (!isOwner) {
+		['#msgBtn', '#trimBtn', '#regenBtn', '#delBtn'].forEach((s) => $(s).remove());
+		$('#title').removeAttribute('contenteditable');
+		$('#top').innerHTML = topbar('');
 	}
 	video.src = V.url;
 	if (V.thumbUrl) video.poster = V.thumbUrl;

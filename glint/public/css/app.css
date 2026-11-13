@@ -369,6 +369,10 @@ textarea.input { height: auto; padding: 10px 14px; resize: vertical; min-height:
 }
 @media (max-width: 860px) {
 	.rec-layout { grid-template-columns: 1fr; padding: 16px; }
+	.rec-layout > section { order: -1; }
+	.rec-side-bottom { position: sticky; bottom: 12px; z-index: 5; }
+	.rec-side-bottom .hint { display: none; }
+	.stage { min-height: 0; aspect-ratio: 16 / 9; }
 	.page, .watch { padding-left: 16px; padding-right: 16px; }
 	.topbar { padding: 12px 16px; }
 	.hero h1 { font-size: 28px; }

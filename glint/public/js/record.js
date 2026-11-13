@@ -1,4 +1,4 @@
-import { $, $$, fmt, icons, toast, topbar, store, bytes } from './common.js';
+import { $, $$, api, fmt, icons, toast, topbar, store, bytes, requireOwner } from './common.js';
 
 $('#top').innerHTML = topbar(`<a class="btn btn-ghost" href="/">Library</a>`);
 
@@ -342,9 +342,16 @@ async function start() {
 		const mimeType = pickMime();
 		const vbr = { 720: 2_500_000, 1080: 5_000_000, 1440: 8_000_000 }[S.quality];
 		const recorder = new MediaRecorder(mixed, { mimeType, videoBitsPerSecond: vbr, audioBitsPerSecond: 128_000 });
-		rec = { recorder, chunks: [], startedAt: performance.now(), pausedAt: null, pausedTotal: 0, mixed, transcript: [], thumb: null, mime: recorder.mimeType || mimeType };
-		recorder.ondataavailable = (e) => e.data.size && rec?.chunks.push(e.data);
+		// Separate low-bitrate audio track: small enough to send to Whisper for the transcript.
+		const aTracks = dest.stream.getAudioTracks();
+		const aType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find((t) => MediaRecorder.isTypeSupported?.(t));
+		const audioRec = aTracks.length && aType ? new MediaRecorder(new MediaStream(aTracks), { mimeType: aType, audioBitsPerSecond: 32_000 }) : null;
+		rec = { recorder, audioRec, chunks: [], audioChunks: [], startedAt: performance.now(), pausedAt: null, pausedTotal: 0, mixed, transcript: [], thumb: null, mime: recorder.mimeType || mimeType, audioMime: audioRec?.mimeType || aType };
+		const cur = rec;
+		recorder.ondataavailable = (e) => e.data.size && cur.chunks.push(e.data);
+		if (audioRec) audioRec.ondataavailable = (e) => e.data.size && cur.audioChunks.push(e.data);
 		recorder.start(1000);
+		audioRec?.start(1000);
 
 		setTimeout(grabThumb, 1500);
 		startCaptions();
@@ -385,10 +392,12 @@ function togglePause() {
 		rec.pausedTotal += performance.now() - rec.pausedAt;
 		rec.pausedAt = null;
 		rec.recorder.resume();
+		rec.audioRec?.resume();
 		startCaptions();
 	} else {
 		rec.pausedAt = performance.now();
 		rec.recorder.pause();
+		rec.audioRec?.pause();
 		stopCaptions();
 	}
 	$('#recBar').classList.toggle('paused', !paused);
@@ -468,13 +477,14 @@ function teardown() {
 }
 
 function stopRecorder() {
-	return new Promise((resolve) => {
-		const r = rec.recorder;
-		if (r.state === 'inactive') return resolve();
-		r.onstop = resolve;
-		if (r.state === 'paused') r.resume();
-		r.stop();
-	});
+	const one = (r) =>
+		new Promise((resolve) => {
+			if (!r || r.state === 'inactive') return resolve();
+			r.onstop = resolve;
+			if (r.state === 'paused') r.resume();
+			r.stop();
+		});
+	return Promise.all([one(rec.recorder), one(rec.audioRec)]);
 }
 
 async function stop() {
@@ -491,10 +501,12 @@ async function stop() {
 	const meta = { duration, width: canvas.width, height: canvas.height, mode: S.mode, transcript: cur.transcript };
 	const blob = new Blob(cur.chunks, { type: cur.mime.split(';')[0] || 'video/webm' });
 	const thumb = cur.thumb;
+	const audio = cur.audioChunks.length ? new Blob(cur.audioChunks, { type: (cur.audioMime || 'audio/webm').split(';')[0] }) : null;
+	cur.mixed.getTracks().forEach((t) => t.stop());
 	rec = null;
 	teardown();
 	if (duration < 0.8) return toast('Too short — nothing saved');
-	upload(blob, thumb, meta);
+	upload(blob, thumb, meta, audio);
 }
 
 async function discard(restart = false) {
@@ -530,42 +542,66 @@ async function restartWith(stream) {
 	}
 }
 
-function upload(blob, thumb, meta) {
-	const ov = $('#uploading');
-	ov.classList.add('on');
-	const fd = new FormData();
-	fd.append('video', blob, `recording.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`);
-	if (thumb) fd.append('thumb', thumb, 'thumb.jpg');
-	fd.append('meta', JSON.stringify(meta));
-	const xhr = new XMLHttpRequest();
-	xhr.open('POST', '/api/videos');
-	xhr.upload.onprogress = (e) => {
-		if (!e.lengthComputable) return;
-		$('#upBar').style.width = `${(e.loaded / e.total) * 100}%`;
-		$('#upStat').textContent = `${bytes(e.loaded)} / ${bytes(e.total)}`;
+const extOf = (type = '') => (type.includes('mp4') ? (type.startsWith('audio') ? 'm4a' : 'mp4') : type.includes('jpeg') ? 'jpg' : 'webm');
+
+function progress(loaded, total) {
+	$('#upBar').style.width = `${Math.min(100, (loaded / total) * 100)}%`;
+	$('#upStat').textContent = `${bytes(loaded)} / ${bytes(total)}`;
+}
+
+function uploadLocal(blob, thumb, meta, audio) {
+	return new Promise((resolve, reject) => {
+		const fd = new FormData();
+		fd.append('video', blob, `recording.${extOf(blob.type)}`);
+		if (thumb) fd.append('thumb', thumb, 'thumb.jpg');
+		if (audio) fd.append('audio', audio, `audio.${extOf(audio.type)}`);
+		fd.append('meta', JSON.stringify(meta));
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', '/api/videos');
+		xhr.upload.onprogress = (e) => e.lengthComputable && progress(e.loaded, e.total);
+		xhr.onload = () => (xhr.status < 300 ? resolve(JSON.parse(xhr.responseText)) : reject(new Error(`HTTP ${xhr.status}`)));
+		xhr.onerror = () => reject(new Error('Network error'));
+		xhr.send(fd);
+	});
+}
+
+async function uploadBlob(blob, thumb, meta, audio) {
+	const { upload: put } = await import('/vendor/blob-client.js');
+	const stamp = `${Date.now().toString(36)}`;
+	const total = blob.size + (thumb?.size || 0) + (audio?.size || 0);
+	let done = 0;
+	const send = async (file, name) => {
+		if (!file) return null;
+		const r = await put(`media/${stamp}-${name}.${extOf(file.type)}`, file, {
+			access: 'public',
+			handleUploadUrl: '/api/upload',
+			contentType: file.type,
+			multipart: file.size > 50e6,
+			onUploadProgress: (p) => progress(done + p.loaded, total),
+		});
+		done += file.size;
+		return r.url;
 	};
-	xhr.onload = () => {
-		if (xhr.status >= 300) {
-			$('#upMsg').textContent = 'Upload failed — retrying in 3s';
-			return setTimeout(() => {
-				ov.classList.remove('on');
-				upload(blob, thumb, meta);
-			}, 3000);
-		}
-		const v = JSON.parse(xhr.responseText);
+	const [thumbUrl, audioUrl] = await Promise.all([send(thumb, 'thumb'), send(audio, 'audio')]);
+	const videoUrl = await send(blob, 'video');
+	return api('/videos', {
+		method: 'POST',
+		body: { videoUrl, thumbUrl, audioUrl, audioMime: audio?.type || null, mime: blob.type, size: blob.size, meta },
+	});
+}
+
+async function upload(blob, thumb, meta, audio) {
+	$('#uploading').classList.add('on');
+	$('#upMsg').textContent = 'Uploading…';
+	try {
+		const v = await (cfg.storage === 'blob' ? uploadBlob : uploadLocal)(blob, thumb, meta, audio);
 		$('#upMsg').textContent = 'Done. Opening your video…';
-		const link = `${location.origin}/v/${v.id}`;
-		navigator.clipboard?.writeText(link).catch(() => {});
+		navigator.clipboard?.writeText(`${location.origin}/v/${v.id}`).catch(() => {});
 		location.href = `/v/${v.id}?new=1`;
-	};
-	xhr.onerror = () => {
-		$('#upMsg').textContent = 'Network error — retrying in 3s';
-		setTimeout(() => {
-			ov.classList.remove('on');
-			upload(blob, thumb, meta);
-		}, 3000);
-	};
-	xhr.send(fd);
+	} catch (e) {
+		$('#upMsg').textContent = `${e.message} — retrying in 3s`;
+		setTimeout(() => upload(blob, thumb, meta, audio), 3000);
+	}
 }
 
 // ---------- floating controls (Document Picture-in-Picture) ----------
@@ -622,9 +658,12 @@ window.addEventListener('beforeunload', (e) => {
 	if (rec) e.preventDefault();
 });
 
+let cfg = {};
 syncUI();
 sizeCanvas();
 (async () => {
+	await requireOwner();
+	cfg = await api('/config').catch(() => ({}));
 	try {
 		// One permission prompt up front so device labels populate.
 		const tmp = await navigator.mediaDevices.getUserMedia({ audio: true, video: S.mode !== 'screen' });

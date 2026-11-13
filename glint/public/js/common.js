@@ -111,3 +111,39 @@ export function topbar(right = '') {
 		<div class="spacer"></div>${right}
 	</header>`;
 }
+
+// ---------- auth ----------
+let meCache;
+export const me = () => (meCache ??= api('/me').catch(() => ({ owner: true, locked: false })));
+
+// Resolves once the visitor is the owner (shows a password screen if the app is locked).
+export async function requireOwner() {
+	const m = await me();
+	if (m.owner) return;
+	await new Promise((resolve) => {
+		const wrap = document.createElement('div');
+		wrap.className = 'modal on';
+		wrap.innerHTML = `<form class="modal-card" style="width:min(400px,100%);text-align:center">
+			<div class="orb" style="width:56px;height:56px"></div>
+			<h3 style="margin-top:16px">Welcome back</h3>
+			<p class="muted" style="margin:0 0 16px">Enter your Glint password.</p>
+			<input class="input" type="password" name="pw" autocomplete="current-password" placeholder="Password" style="width:100%" />
+			<p class="faint" id="loginErr" style="min-height:20px;margin:8px 0 0;color:var(--bad)"></p>
+			<button class="btn btn-primary" style="width:100%;margin-top:6px">Unlock</button>
+		</form>`;
+		document.body.append(wrap);
+		const f = wrap.querySelector('form');
+		f.pw.focus();
+		f.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			try {
+				await api('/login', { method: 'POST', body: { password: f.pw.value } });
+				meCache = Promise.resolve({ owner: true, locked: true });
+				wrap.remove();
+				resolve();
+			} catch (err) {
+				$('#loginErr', wrap).textContent = err.message;
+			}
+		});
+	});
+}
