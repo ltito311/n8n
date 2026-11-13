@@ -12,8 +12,8 @@ let q = '';
 
 api('/config').then((c) => {
 	$('#aiPill').innerHTML = c.ai
-		? `<span class="pill ai">${icons.sparkle.replace('<svg', '<svg width="12" height="12"')} Grok · ${esc(c.model)}</span>`
-		: `<span class="pill warn"><span class="dot"></span>AI off — add GROK_API_KEY</span>`;
+		? `<span class="pill ai">${icons.sparkle.replace('<svg', '<svg width="12" height="12"')} Groq · ${esc(c.model)}</span>`
+		: `<span class="pill warn"><span class="dot"></span>AI off — add GROQ_API_KEY</span>`;
 });
 
 async function load() {

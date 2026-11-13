@@ -1,11 +1,13 @@
 import fs from 'node:fs';
+import { execFile } from 'node:child_process';
 
 const env = (k, d = '') => (process.env[k] ?? '').trim() || d;
+const GROQ_URL = () => env('GROQ_BASE_URL', 'https://api.groq.com/openai/v1');
 
 export const aiConfig = () => ({
-	enabled: Boolean(env('GROK_API_KEY') || env('XAI_API_KEY')),
-	model: env('GROK_MODEL', 'grok-4'),
-	transcription: Boolean(env('TRANSCRIBE_API_KEY')),
+	enabled: Boolean(env('GROQ_API_KEY')),
+	model: env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+	transcription: env('GROQ_TRANSCRIBE', 'on') !== 'off' && Boolean(env('GROQ_API_KEY')),
 });
 
 const fmt = (s) => {
@@ -17,9 +19,9 @@ export const transcriptText = (segments = [], withTimes = true) =>
 	segments.map((s) => (withTimes ? `[${fmt(s.start)}] ${s.text}` : s.text)).join('\n');
 
 async function chat(messages, { json = false, temperature = 0.3, maxTokens = 1500 } = {}) {
-	const key = env('GROK_API_KEY') || env('XAI_API_KEY');
-	if (!key) throw new Error('GROK_API_KEY is not set');
-	const res = await fetch(`${env('GROK_BASE_URL', 'https://api.x.ai/v1')}/chat/completions`, {
+	const key = env('GROQ_API_KEY');
+	if (!key) throw new Error('GROQ_API_KEY is not set');
+	const res = await fetch(`${GROQ_URL()}/chat/completions`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
 		body: JSON.stringify({
@@ -30,7 +32,7 @@ async function chat(messages, { json = false, temperature = 0.3, maxTokens = 150
 			...(json ? { response_format: { type: 'json_object' } } : {}),
 		}),
 	});
-	if (!res.ok) throw new Error(`Grok ${res.status}: ${(await res.text()).slice(0, 300)}`);
+	if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 300)}`);
 	const data = await res.json();
 	return data.choices?.[0]?.message?.content ?? '';
 }
@@ -109,14 +111,26 @@ export async function draftMessage(video, kind, link) {
 	);
 }
 
+// Pull a small mono audio track out of the video so uploads stay well under Groq's file limit.
+const extractAudio = (filePath) =>
+	new Promise((resolve) => {
+		const out = filePath.replace(/\.\w+$/, '.audio.ogg');
+		execFile('ffmpeg', ['-y', '-loglevel', 'error', '-i', filePath, '-vn', '-ac', '1', '-ar', '16000', '-c:a', 'libopus', '-b:a', '24k', out], (err) =>
+			resolve(err ? null : out),
+		);
+	});
+
 export async function transcribeFile(filePath, mime) {
-	const key = env('TRANSCRIBE_API_KEY');
+	const key = env('GROQ_API_KEY');
 	if (!key) return null;
+	const audio = await extractAudio(filePath);
 	const form = new FormData();
-	form.append('file', new Blob([fs.readFileSync(filePath)], { type: mime || 'video/webm' }), 'audio.webm');
-	form.append('model', env('TRANSCRIBE_MODEL', 'whisper-1'));
+	if (audio) form.append('file', new Blob([fs.readFileSync(audio)], { type: 'audio/ogg' }), 'audio.ogg');
+	else form.append('file', new Blob([fs.readFileSync(filePath)], { type: mime || 'video/webm' }), `audio.${(mime || '').includes('mp4') ? 'mp4' : 'webm'}`);
+	if (audio) fs.rmSync(audio, { force: true });
+	form.append('model', env('GROQ_TRANSCRIBE_MODEL', 'whisper-large-v3-turbo'));
 	form.append('response_format', 'verbose_json');
-	const res = await fetch(`${env('TRANSCRIBE_BASE_URL', 'https://api.openai.com/v1')}/audio/transcriptions`, {
+	const res = await fetch(`${GROQ_URL()}/audio/transcriptions`, {
 		method: 'POST',
 		headers: { Authorization: `Bearer ${key}` },
 		body: form,

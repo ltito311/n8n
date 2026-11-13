@@ -59,10 +59,14 @@ async function process_(vid) {
 	if (!v) return;
 	const cfg = aiConfig();
 	try {
-		if (cfg.transcription && !(v.transcript?.length)) {
+		if (cfg.transcription && v.transcriptSource !== 'whisper') {
 			db.update(vid, { ai: { ...v.ai, status: 'transcribing' } });
-			const segs = await transcribeFile(path.join(mediaDir, v.file), v.mime);
-			if (segs) db.update(vid, { transcript: segs, transcriptSource: 'whisper' });
+			try {
+				const segs = await transcribeFile(path.join(mediaDir, v.file), v.mime);
+				if (segs?.length) db.update(vid, { transcript: segs, transcriptSource: 'whisper' });
+			} catch (e) {
+				console.error('[transcribe]', e.message, '— keeping browser transcript');
+			}
 		}
 		v = db.get(vid);
 		if (!cfg.enabled) return db.update(vid, { ai: { ...v.ai, status: 'disabled' } });
@@ -242,6 +246,6 @@ app.get('/v/:id', (req, res) => res.sendFile(path.join(root, 'public', 'watch.ht
 app.listen(PORT, () => {
 	const c = aiConfig();
 	console.log(`\n  ● Glint running at http://localhost:${PORT}`);
-	console.log(`    AI: ${c.enabled ? `Grok (${c.model})` : 'off — set GROK_API_KEY in .env'}`);
-	console.log(`    Transcription: ${c.transcription ? 'server (Whisper-compatible)' : 'browser live captions'}\n`);
+	console.log(`    AI: ${c.enabled ? `Groq (${c.model})` : 'off — set GROQ_API_KEY in .env'}`);
+	console.log(`    Transcription: ${c.transcription ? 'Groq Whisper' : 'browser live captions'}\n`);
 });
