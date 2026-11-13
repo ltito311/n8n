@@ -1,4 +1,5 @@
 import { $, $$, api, fmt, ago, esc, icons, toast, topbar, store, avatar, bytes, me } from './common.js';
+import { hold, go } from './fx.js';
 
 const vid = location.pathname.split('/').pop();
 $('#top').innerHTML = topbar(`<a class="btn btn-ghost" href="/">Library</a><a class="btn btn-primary" href="/record">${icons.plus} New</a>`);
@@ -455,7 +456,7 @@ $('#regenBtn').addEventListener('click', regen);
 $('#delBtn').addEventListener('click', async () => {
 	if (!confirm('Delete this video for everyone? This cannot be undone.')) return;
 	await api(`/videos/${vid}`, { method: 'DELETE' });
-	location.href = '/';
+	go('/');
 });
 
 // draft message
@@ -576,7 +577,7 @@ function poll() {
 	}, 2500);
 }
 
-(async () => {
+hold((async () => {
 	try {
 		let m;
 		[V, cfg, m] = await Promise.all([api(`/videos/${vid}`), api('/config'), me()]);
@@ -604,4 +605,4 @@ function poll() {
 	if (['queued', 'processing', 'transcribing'].includes(V.ai?.status)) poll();
 	const t = new URLSearchParams(location.search).get('t');
 	if (t) video.addEventListener('loadedmetadata', () => seek(Number(t)), { once: true });
-})();
+})());

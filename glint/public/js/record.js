@@ -1,6 +1,8 @@
 import { $, $$, api, fmt, icons, toast, topbar, store, bytes, requireOwner } from './common.js';
+import { go, loaderHTML } from './fx.js';
 
 $('#top').innerHTML = topbar(`<a class="btn btn-ghost" href="/">Library</a>`);
+$('#uploading .orb').outerHTML = `<div style="display:grid;place-items:center">${loaderHTML()}</div>`;
 
 // ---------- settings ----------
 const S = {
@@ -597,7 +599,7 @@ async function upload(blob, thumb, meta, audio) {
 		const v = await (cfg.storage === 'blob' ? uploadBlob : uploadLocal)(blob, thumb, meta, audio);
 		$('#upMsg').textContent = 'Done. Opening your video…';
 		navigator.clipboard?.writeText(`${location.origin}/v/${v.id}`).catch(() => {});
-		location.href = `/v/${v.id}?new=1`;
+		go(`/v/${v.id}?new=1`);
 	} catch (e) {
 		$('#upMsg').textContent = `${e.message} — retrying in 3s`;
 		setTimeout(() => upload(blob, thumb, meta, audio), 3000);

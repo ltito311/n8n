@@ -1,4 +1,5 @@
-import { $, api, fmt, ago, esc, icons, toast, topbar, store, requireOwner } from './common.js';
+import { $, api, fmt, ago, esc, icons, toast, topbar, store, requireOwner, me } from './common.js';
+import { hold } from './fx.js';
 
 $('#top').innerHTML = topbar(`<a class="btn btn-primary" href="/record">${icons.plus} New recording</a>`);
 $('#search').innerHTML = `${icons.search}<input class="input" id="q" placeholder="Search titles, summaries, transcripts…" />`;
@@ -95,8 +96,11 @@ document.addEventListener('keydown', (e) => {
 	}
 });
 
+let loaded = false;
+list.innerHTML = Array.from({ length: 6 }, () => `<div class="card"><div class="thumb skeleton" style="border-radius:0"></div><div class="card-body"><div class="skeleton" style="height:16px;width:75%;margin-bottom:10px"></div><div class="skeleton" style="height:12px;margin-bottom:6px"></div><div class="skeleton" style="height:12px;width:60%"></div></div></div>`).join('');
+hold(me().then((m) => m.owner && load().then(() => (loaded = true))));
 await requireOwner();
-load();
+if (!loaded) load();
 // refresh while AI is still working on something
 setInterval(() => {
 	if (videos.some((v) => ['queued', 'processing', 'transcribing'].includes(v.ai?.status))) load();

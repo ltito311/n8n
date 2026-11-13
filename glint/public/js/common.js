@@ -1,3 +1,4 @@
+import './fx.js';
 export const $ = (s, el = document) => el.querySelector(s);
 export const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
@@ -107,7 +108,7 @@ export const icons = {
 
 export function topbar(right = '') {
 	return `<header class="topbar">
-		<a class="brand" href="/"><span class="brand-mark"></span>Glint</a>
+		<a class="brand" href="/"><img class="brand-logo" src="/logo.svg" alt="" width="30" height="30" />Glint</a>
 		<div class="spacer"></div>${right}
 	</header>`;
 }
